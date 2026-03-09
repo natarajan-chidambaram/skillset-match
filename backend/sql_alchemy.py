@@ -41,6 +41,7 @@ class SkillMatch(Base):
     createdDate: Mapped[dt_date] = mapped_column(Date)
     startDate: Mapped[dt_date] = mapped_column(Date)
     status: Mapped[int] = mapped_column(Integer)
+    user_2_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     user_3_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
 class SkillRequest(Base):
@@ -50,16 +51,17 @@ class SkillRequest(Base):
     createdDate: Mapped[dt_date] = mapped_column(Date)
     status: Mapped[int] = mapped_column(Integer)
     deadlineDate: Mapped[dt_date] = mapped_column(Date)
-    user_2_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    skillmatch_2_id: Mapped[int] = mapped_column(ForeignKey("skillmatch.id"))
+    user_1_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
 class Skill(Base):
     __tablename__ = "skill"
     id: Mapped[int] = mapped_column(primary_key=True)
+    skillLevel: Mapped[str] = mapped_column(String(100))
     skillId: Mapped[int] = mapped_column(Integer)
     skillName: Mapped[str] = mapped_column(String(100))
     category: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(String(100))
-    skillLevel: Mapped[str] = mapped_column(String(100))
 
 class UserSkill(Base):
     __tablename__ = "userskill"
@@ -68,9 +70,8 @@ class UserSkill(Base):
     skillLevel: Mapped[str] = mapped_column(String(100))
     yearsOfExperience: Mapped[int] = mapped_column(Integer)
     certification: Mapped[bool] = mapped_column(Boolean)
-    skill_id: Mapped[int] = mapped_column(ForeignKey("skill.id"))
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
-    user_1_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    skill_id: Mapped[int] = mapped_column(ForeignKey("skill.id"))
 
 class User(Base):
     __tablename__ = "user"
@@ -88,25 +89,27 @@ Session.skillmatch_1: Mapped["SkillMatch"] = relationship("SkillMatch", back_pop
 Review.session_1: Mapped["Session"] = relationship("Session", back_populates="review", foreign_keys=[Review.session_1_id])
 
 #--- Relationships of the skillmatch table
+SkillMatch.user_2: Mapped["User"] = relationship("User", back_populates="skillmatch", foreign_keys=[SkillMatch.user_2_id])
+SkillMatch.skillrequest_1: Mapped[List["SkillRequest"]] = relationship("SkillRequest", back_populates="skillmatch_2", foreign_keys=[SkillRequest.skillmatch_2_id])
 SkillMatch.session: Mapped[List["Session"]] = relationship("Session", back_populates="skillmatch_1", foreign_keys=[Session.skillmatch_1_id])
-SkillMatch.user_3: Mapped["User"] = relationship("User", back_populates="skillmatch", foreign_keys=[SkillMatch.user_3_id])
+SkillMatch.user_3: Mapped["User"] = relationship("User", back_populates="skillmatch_3", foreign_keys=[SkillMatch.user_3_id])
 
 #--- Relationships of the skillrequest table
-SkillRequest.user_2: Mapped["User"] = relationship("User", back_populates="skillrequest", foreign_keys=[SkillRequest.user_2_id])
+SkillRequest.skillmatch_2: Mapped["SkillMatch"] = relationship("SkillMatch", back_populates="skillrequest_1", foreign_keys=[SkillRequest.skillmatch_2_id])
+SkillRequest.user_1: Mapped["User"] = relationship("User", back_populates="skillrequest", foreign_keys=[SkillRequest.user_1_id])
 
 #--- Relationships of the skill table
-Skill.userskill_2: Mapped[List["UserSkill"]] = relationship("UserSkill", back_populates="skill", foreign_keys=[UserSkill.skill_id])
+Skill.userskill_1: Mapped[List["UserSkill"]] = relationship("UserSkill", back_populates="skill", foreign_keys=[UserSkill.skill_id])
 
 #--- Relationships of the userskill table
-UserSkill.skill: Mapped["Skill"] = relationship("Skill", back_populates="userskill_2", foreign_keys=[UserSkill.skill_id])
 UserSkill.user: Mapped["User"] = relationship("User", back_populates="userskill", foreign_keys=[UserSkill.user_id])
-UserSkill.user_1: Mapped["User"] = relationship("User", back_populates="userskill_1", foreign_keys=[UserSkill.user_1_id])
+UserSkill.skill: Mapped["Skill"] = relationship("Skill", back_populates="userskill_1", foreign_keys=[UserSkill.skill_id])
 
 #--- Relationships of the user table
-User.skillmatch: Mapped[List["SkillMatch"]] = relationship("SkillMatch", back_populates="user_3", foreign_keys=[SkillMatch.user_3_id])
-User.userskill_1: Mapped[List["UserSkill"]] = relationship("UserSkill", back_populates="user_1", foreign_keys=[UserSkill.user_1_id])
+User.skillrequest: Mapped[List["SkillRequest"]] = relationship("SkillRequest", back_populates="user_1", foreign_keys=[SkillRequest.user_1_id])
+User.skillmatch_3: Mapped[List["SkillMatch"]] = relationship("SkillMatch", back_populates="user_3", foreign_keys=[SkillMatch.user_3_id])
 User.userskill: Mapped[List["UserSkill"]] = relationship("UserSkill", back_populates="user", foreign_keys=[UserSkill.user_id])
-User.skillrequest: Mapped[List["SkillRequest"]] = relationship("SkillRequest", back_populates="user_2", foreign_keys=[SkillRequest.user_2_id])
+User.skillmatch: Mapped[List["SkillMatch"]] = relationship("SkillMatch", back_populates="user_2", foreign_keys=[SkillMatch.user_2_id])
 
 # Database connection
 DATABASE_URL = "sqlite:///Class_Diagram.db"  # SQLite connection
