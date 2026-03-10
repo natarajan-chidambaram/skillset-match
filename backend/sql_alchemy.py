@@ -1,4 +1,5 @@
 import enum
+import os # for reading .env variable
 from typing import List, Optional
 from sqlalchemy import (
     create_engine, Column, ForeignKey, Table, Text, Boolean, String, Date, 
@@ -113,7 +114,7 @@ User.skillmatch: Mapped[List["SkillMatch"]] = relationship("SkillMatch", back_po
 
 # Database connection
 DATABASE_URL = "sqlite:///Class_Diagram.db"  # SQLite connection
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(os.getenv("DATABASE_URL", echo=True) #modified to PostgreSQL
 
 # Create tables in the database
 Base.metadata.create_all(engine, checkfirst=True)
