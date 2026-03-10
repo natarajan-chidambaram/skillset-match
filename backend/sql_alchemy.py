@@ -114,7 +114,7 @@ User.skillmatch: Mapped[List["SkillMatch"]] = relationship("SkillMatch", back_po
 
 # Database connection
 DATABASE_URL = "sqlite:///Class_Diagram.db"  # SQLite connection
-engine = create_engine(os.getenv("DATABASE_URL", echo=True)) #modified to PostgreSQL
+engine = create_engine(os.getenv("DATABASE_URL")) #modified to PostgreSQL
 
 # Create tables in the database
 Base.metadata.create_all(engine, checkfirst=True)
