@@ -24,25 +24,15 @@ logger = logging.getLogger(__name__)
 def init_db():
     SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/Class_Diagram.db")
     # Ensure local SQLite directory exists (safe no-op for other DBs)
-
-    if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-        os.makedirs("data", exist_ok=True)
-        engine = create_engine(
-            SQLALCHEMY_DATABASE_URL,
-            connect_args={"check_same_thread": False},
-            pool_size=10,
-            max_overflow=20,
-            pool_pre_ping=True,
-            echo=False
-        )
-    else:
-        engine = create_engine(
-            SQLALCHEMY_DATABASE_URL,
-            pool_size=10,
-            max_overflow=20,
-            pool_pre_ping=True,
-            echo=False
-        )
+    os.makedirs("data", exist_ok=True)
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,
+        echo=False
+    )
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base.metadata.create_all(bind=engine)
     return SessionLocal
@@ -55,12 +45,6 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_tags=[
         {"name": "System", "description": "System health and statistics"},
-        {"name": "Session", "description": "Operations for Session entities"},
-        {"name": "Session Relationships", "description": "Manage Session relationships"},
-        {"name": "Review", "description": "Operations for Review entities"},
-        {"name": "Review Relationships", "description": "Manage Review relationships"},
-        {"name": "SkillMatch", "description": "Operations for SkillMatch entities"},
-        {"name": "SkillMatch Relationships", "description": "Manage SkillMatch relationships"},
         {"name": "SkillRequest", "description": "Operations for SkillRequest entities"},
         {"name": "SkillRequest Relationships", "description": "Manage SkillRequest relationships"},
         {"name": "Skill", "description": "Operations for Skill entities"},
@@ -69,6 +53,12 @@ app = FastAPI(
         {"name": "UserSkill Relationships", "description": "Manage UserSkill relationships"},
         {"name": "User", "description": "Operations for User entities"},
         {"name": "User Relationships", "description": "Manage User relationships"},
+        {"name": "Session", "description": "Operations for Session entities"},
+        {"name": "Session Relationships", "description": "Manage Session relationships"},
+        {"name": "Review", "description": "Operations for Review entities"},
+        {"name": "Review Relationships", "description": "Manage Review relationships"},
+        {"name": "SkillMatch", "description": "Operations for SkillMatch entities"},
+        {"name": "SkillMatch Relationships", "description": "Manage SkillMatch relationships"},
     ]
 )
 
@@ -215,13 +205,13 @@ def health_check():
 def get_statistics(database: Session = Depends(get_db)):
     """Get database statistics for all entities"""
     stats = {}
-    stats["session_count"] = database.query(Session).count()
-    stats["review_count"] = database.query(Review).count()
-    stats["skillmatch_count"] = database.query(SkillMatch).count()
     stats["skillrequest_count"] = database.query(SkillRequest).count()
     stats["skill_count"] = database.query(Skill).count()
     stats["userskill_count"] = database.query(UserSkill).count()
     stats["user_count"] = database.query(User).count()
+    stats["session_count"] = database.query(Session).count()
+    stats["review_count"] = database.query(Review).count()
+    stats["skillmatch_count"] = database.query(SkillMatch).count()
     stats["total_entities"] = sum(stats.values())
     return stats
 
@@ -283,725 +273,6 @@ async def BAL_reduce(sequence:list, reduce_fn, aggregator) -> any:
     for elem in sequence:
         aggregator = reduce_fn(aggregator, elem)
     return aggregator
-
-
-############################################
-#
-#   Session functions
-#
-############################################
-
-@app.get("/session/", response_model=None, tags=["Session"])
-def get_all_session(detailed: bool = False, database: Session = Depends(get_db)) -> list:
-    from sqlalchemy.orm import joinedload
-
-    # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
-    if detailed:
-        # Eagerly load all relationships to avoid N+1 queries
-        query = database.query(Session)
-        query = query.options(joinedload(Session.skillmatch_1))
-        query = query.options(joinedload(Session.review))
-        session_list = query.all()
-
-        # Serialize with relationships included
-        result = []
-        for session_item in session_list:
-            item_dict = session_item.__dict__.copy()
-            item_dict.pop('_sa_instance_state', None)
-
-            # Add many-to-one relationships (foreign keys for lookup columns)
-            if session_item.skillmatch_1:
-                related_obj = session_item.skillmatch_1
-                related_dict = related_obj.__dict__.copy()
-                related_dict.pop('_sa_instance_state', None)
-                item_dict['skillmatch_1'] = related_dict
-            else:
-                item_dict['skillmatch_1'] = None
-            if session_item.review:
-                related_obj = session_item.review
-                related_dict = related_obj.__dict__.copy()
-                related_dict.pop('_sa_instance_state', None)
-                item_dict['review'] = related_dict
-            else:
-                item_dict['review'] = None
-
-
-            result.append(item_dict)
-        return result
-    else:
-        # Default: return flat entities (faster for charts/widgets without lookup columns)
-        return database.query(Session).all()
-
-
-@app.get("/session/count/", response_model=None, tags=["Session"])
-def get_count_session(database: Session = Depends(get_db)) -> dict:
-    """Get the total count of Session entities"""
-    count = database.query(Session).count()
-    return {"count": count}
-
-
-@app.get("/session/paginated/", response_model=None, tags=["Session"])
-def get_paginated_session(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
-    """Get paginated list of Session entities"""
-    total = database.query(Session).count()
-    session_list = database.query(Session).offset(skip).limit(limit).all()
-    return {
-        "total": total,
-        "skip": skip,
-        "limit": limit,
-        "data": session_list
-    }
-
-
-@app.get("/session/search/", response_model=None, tags=["Session"])
-def search_session(
-    database: Session = Depends(get_db)
-) -> list:
-    """Search Session entities by attributes"""
-    query = database.query(Session)
-
-
-    results = query.all()
-    return results
-
-
-@app.get("/session/{session_id}/", response_model=None, tags=["Session"])
-async def get_session(session_id: int, database: Session = Depends(get_db)) -> Session:
-    db_session = database.query(Session).filter(Session.id == session_id).first()
-    if db_session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
-
-    response_data = {
-        "session": db_session,
-}
-    return response_data
-
-
-
-@app.post("/session/", response_model=None, tags=["Session"])
-async def create_session(session_data: SessionCreate, database: Session = Depends(get_db)) -> Session:
-
-    if session_data.skillmatch_1 is not None:
-        db_skillmatch_1 = database.query(SkillMatch).filter(SkillMatch.id == session_data.skillmatch_1).first()
-        if not db_skillmatch_1:
-            raise HTTPException(status_code=400, detail="SkillMatch not found")
-    else:
-        raise HTTPException(status_code=400, detail="SkillMatch ID is required")
-
-    db_session = Session(
-        duration=session_data.duration,        sessionId=session_data.sessionId,        sessionDate=session_data.sessionDate,        sessionType=session_data.sessionType,        skillmatch_1_id=session_data.skillmatch_1        )
-
-    database.add(db_session)
-    database.commit()
-    database.refresh(db_session)
-
-
-
-
-    return db_session
-
-
-@app.post("/session/bulk/", response_model=None, tags=["Session"])
-async def bulk_create_session(items: list[SessionCreate], database: Session = Depends(get_db)) -> dict:
-    """Create multiple Session entities at once"""
-    created_items = []
-    errors = []
-
-    for idx, item_data in enumerate(items):
-        try:
-            # Basic validation for each item
-            if not item_data.skillmatch_1:
-                raise ValueError("SkillMatch ID is required")
-
-            db_session = Session(
-                duration=item_data.duration,                sessionId=item_data.sessionId,                sessionDate=item_data.sessionDate,                sessionType=item_data.sessionType,                skillmatch_1_id=item_data.skillmatch_1            )
-            database.add(db_session)
-            database.flush()  # Get ID without committing
-            created_items.append(db_session.id)
-        except Exception as e:
-            errors.append({"index": idx, "error": str(e)})
-
-    if errors:
-        database.rollback()
-        raise HTTPException(status_code=400, detail={"message": "Bulk creation failed", "errors": errors})
-
-    database.commit()
-    return {
-        "created_count": len(created_items),
-        "created_ids": created_items,
-        "message": f"Successfully created {len(created_items)} Session entities"
-    }
-
-
-@app.delete("/session/bulk/", response_model=None, tags=["Session"])
-async def bulk_delete_session(ids: list[int], database: Session = Depends(get_db)) -> dict:
-    """Delete multiple Session entities at once"""
-    deleted_count = 0
-    not_found = []
-
-    for item_id in ids:
-        db_session = database.query(Session).filter(Session.id == item_id).first()
-        if db_session:
-            database.delete(db_session)
-            deleted_count += 1
-        else:
-            not_found.append(item_id)
-
-    database.commit()
-
-    return {
-        "deleted_count": deleted_count,
-        "not_found": not_found,
-        "message": f"Successfully deleted {deleted_count} Session entities"
-    }
-
-@app.put("/session/{session_id}/", response_model=None, tags=["Session"])
-async def update_session(session_id: int, session_data: SessionCreate, database: Session = Depends(get_db)) -> Session:
-    db_session = database.query(Session).filter(Session.id == session_id).first()
-    if db_session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
-
-    setattr(db_session, 'duration', session_data.duration)
-    setattr(db_session, 'sessionId', session_data.sessionId)
-    setattr(db_session, 'sessionDate', session_data.sessionDate)
-    setattr(db_session, 'sessionType', session_data.sessionType)
-    if session_data.skillmatch_1 is not None:
-        db_skillmatch_1 = database.query(SkillMatch).filter(SkillMatch.id == session_data.skillmatch_1).first()
-        if not db_skillmatch_1:
-            raise HTTPException(status_code=400, detail="SkillMatch not found")
-        setattr(db_session, 'skillmatch_1_id', session_data.skillmatch_1)
-    database.commit()
-    database.refresh(db_session)
-
-    return db_session
-
-
-@app.delete("/session/{session_id}/", response_model=None, tags=["Session"])
-async def delete_session(session_id: int, database: Session = Depends(get_db)):
-    db_session = database.query(Session).filter(Session.id == session_id).first()
-    if db_session is None:
-        raise HTTPException(status_code=404, detail="Session not found")
-    database.delete(db_session)
-    database.commit()
-    return db_session
-
-
-
-
-
-############################################
-#
-#   Review functions
-#
-############################################
-
-@app.get("/review/", response_model=None, tags=["Review"])
-def get_all_review(detailed: bool = False, database: Session = Depends(get_db)) -> list:
-    from sqlalchemy.orm import joinedload
-
-    # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
-    if detailed:
-        # Eagerly load all relationships to avoid N+1 queries
-        query = database.query(Review)
-        query = query.options(joinedload(Review.session_1))
-        review_list = query.all()
-
-        # Serialize with relationships included
-        result = []
-        for review_item in review_list:
-            item_dict = review_item.__dict__.copy()
-            item_dict.pop('_sa_instance_state', None)
-
-            # Add many-to-one relationships (foreign keys for lookup columns)
-            if review_item.session_1:
-                related_obj = review_item.session_1
-                related_dict = related_obj.__dict__.copy()
-                related_dict.pop('_sa_instance_state', None)
-                item_dict['session_1'] = related_dict
-            else:
-                item_dict['session_1'] = None
-
-
-            result.append(item_dict)
-        return result
-    else:
-        # Default: return flat entities (faster for charts/widgets without lookup columns)
-        return database.query(Review).all()
-
-
-@app.get("/review/count/", response_model=None, tags=["Review"])
-def get_count_review(database: Session = Depends(get_db)) -> dict:
-    """Get the total count of Review entities"""
-    count = database.query(Review).count()
-    return {"count": count}
-
-
-@app.get("/review/paginated/", response_model=None, tags=["Review"])
-def get_paginated_review(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
-    """Get paginated list of Review entities"""
-    total = database.query(Review).count()
-    review_list = database.query(Review).offset(skip).limit(limit).all()
-    return {
-        "total": total,
-        "skip": skip,
-        "limit": limit,
-        "data": review_list
-    }
-
-
-@app.get("/review/search/", response_model=None, tags=["Review"])
-def search_review(
-    database: Session = Depends(get_db)
-) -> list:
-    """Search Review entities by attributes"""
-    query = database.query(Review)
-
-
-    results = query.all()
-    return results
-
-
-@app.get("/review/{review_id}/", response_model=None, tags=["Review"])
-async def get_review(review_id: int, database: Session = Depends(get_db)) -> Review:
-    db_review = database.query(Review).filter(Review.id == review_id).first()
-    if db_review is None:
-        raise HTTPException(status_code=404, detail="Review not found")
-
-    response_data = {
-        "review": db_review,
-}
-    return response_data
-
-
-
-@app.post("/review/", response_model=None, tags=["Review"])
-async def create_review(review_data: ReviewCreate, database: Session = Depends(get_db)) -> Review:
-
-    if review_data.session_1 is not None:
-        db_session_1 = database.query(Session).filter(Session.id == review_data.session_1).first()
-        if not db_session_1:
-            raise HTTPException(status_code=400, detail="Session not found")
-    else:
-        raise HTTPException(status_code=400, detail="Session ID is required")
-
-    db_review = Review(
-        reviewId=review_data.reviewId,        comments=review_data.comments,        rating=review_data.rating,        session_1_id=review_data.session_1        )
-
-    database.add(db_review)
-    database.commit()
-    database.refresh(db_review)
-
-
-
-
-    return db_review
-
-
-@app.post("/review/bulk/", response_model=None, tags=["Review"])
-async def bulk_create_review(items: list[ReviewCreate], database: Session = Depends(get_db)) -> dict:
-    """Create multiple Review entities at once"""
-    created_items = []
-    errors = []
-
-    for idx, item_data in enumerate(items):
-        try:
-            # Basic validation for each item
-            if not item_data.session_1:
-                raise ValueError("Session ID is required")
-
-            db_review = Review(
-                reviewId=item_data.reviewId,                comments=item_data.comments,                rating=item_data.rating,                session_1_id=item_data.session_1            )
-            database.add(db_review)
-            database.flush()  # Get ID without committing
-            created_items.append(db_review.id)
-        except Exception as e:
-            errors.append({"index": idx, "error": str(e)})
-
-    if errors:
-        database.rollback()
-        raise HTTPException(status_code=400, detail={"message": "Bulk creation failed", "errors": errors})
-
-    database.commit()
-    return {
-        "created_count": len(created_items),
-        "created_ids": created_items,
-        "message": f"Successfully created {len(created_items)} Review entities"
-    }
-
-
-@app.delete("/review/bulk/", response_model=None, tags=["Review"])
-async def bulk_delete_review(ids: list[int], database: Session = Depends(get_db)) -> dict:
-    """Delete multiple Review entities at once"""
-    deleted_count = 0
-    not_found = []
-
-    for item_id in ids:
-        db_review = database.query(Review).filter(Review.id == item_id).first()
-        if db_review:
-            database.delete(db_review)
-            deleted_count += 1
-        else:
-            not_found.append(item_id)
-
-    database.commit()
-
-    return {
-        "deleted_count": deleted_count,
-        "not_found": not_found,
-        "message": f"Successfully deleted {deleted_count} Review entities"
-    }
-
-@app.put("/review/{review_id}/", response_model=None, tags=["Review"])
-async def update_review(review_id: int, review_data: ReviewCreate, database: Session = Depends(get_db)) -> Review:
-    db_review = database.query(Review).filter(Review.id == review_id).first()
-    if db_review is None:
-        raise HTTPException(status_code=404, detail="Review not found")
-
-    setattr(db_review, 'reviewId', review_data.reviewId)
-    setattr(db_review, 'comments', review_data.comments)
-    setattr(db_review, 'rating', review_data.rating)
-    if review_data.session_1 is not None:
-        db_session_1 = database.query(Session).filter(Session.id == review_data.session_1).first()
-        if not db_session_1:
-            raise HTTPException(status_code=400, detail="Session not found")
-        setattr(db_review, 'session_1_id', review_data.session_1)
-    database.commit()
-    database.refresh(db_review)
-
-    return db_review
-
-
-@app.delete("/review/{review_id}/", response_model=None, tags=["Review"])
-async def delete_review(review_id: int, database: Session = Depends(get_db)):
-    db_review = database.query(Review).filter(Review.id == review_id).first()
-    if db_review is None:
-        raise HTTPException(status_code=404, detail="Review not found")
-    database.delete(db_review)
-    database.commit()
-    return db_review
-
-
-
-
-
-############################################
-#
-#   SkillMatch functions
-#
-############################################
-
-@app.get("/skillmatch/", response_model=None, tags=["SkillMatch"])
-def get_all_skillmatch(detailed: bool = False, database: Session = Depends(get_db)) -> list:
-    from sqlalchemy.orm import joinedload
-
-    # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
-    if detailed:
-        # Eagerly load all relationships to avoid N+1 queries
-        query = database.query(SkillMatch)
-        query = query.options(joinedload(SkillMatch.user_3))
-        query = query.options(joinedload(SkillMatch.user_2))
-        skillmatch_list = query.all()
-
-        # Serialize with relationships included
-        result = []
-        for skillmatch_item in skillmatch_list:
-            item_dict = skillmatch_item.__dict__.copy()
-            item_dict.pop('_sa_instance_state', None)
-
-            # Add many-to-one relationships (foreign keys for lookup columns)
-            if skillmatch_item.user_3:
-                related_obj = skillmatch_item.user_3
-                related_dict = related_obj.__dict__.copy()
-                related_dict.pop('_sa_instance_state', None)
-                item_dict['user_3'] = related_dict
-            else:
-                item_dict['user_3'] = None
-            if skillmatch_item.user_2:
-                related_obj = skillmatch_item.user_2
-                related_dict = related_obj.__dict__.copy()
-                related_dict.pop('_sa_instance_state', None)
-                item_dict['user_2'] = related_dict
-            else:
-                item_dict['user_2'] = None
-
-            # Add many-to-many and one-to-many relationship objects (full details)
-            session_list = database.query(Session).filter(Session.skillmatch_1_id == skillmatch_item.id).all()
-            item_dict['session'] = []
-            for session_obj in session_list:
-                session_dict = session_obj.__dict__.copy()
-                session_dict.pop('_sa_instance_state', None)
-                item_dict['session'].append(session_dict)
-            skillrequest_list = database.query(SkillRequest).filter(SkillRequest.skillmatch_2_id == skillmatch_item.id).all()
-            item_dict['skillrequest_1'] = []
-            for skillrequest_obj in skillrequest_list:
-                skillrequest_dict = skillrequest_obj.__dict__.copy()
-                skillrequest_dict.pop('_sa_instance_state', None)
-                item_dict['skillrequest_1'].append(skillrequest_dict)
-
-            result.append(item_dict)
-        return result
-    else:
-        # Default: return flat entities (faster for charts/widgets without lookup columns)
-        return database.query(SkillMatch).all()
-
-
-@app.get("/skillmatch/count/", response_model=None, tags=["SkillMatch"])
-def get_count_skillmatch(database: Session = Depends(get_db)) -> dict:
-    """Get the total count of SkillMatch entities"""
-    count = database.query(SkillMatch).count()
-    return {"count": count}
-
-
-@app.get("/skillmatch/paginated/", response_model=None, tags=["SkillMatch"])
-def get_paginated_skillmatch(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
-    """Get paginated list of SkillMatch entities"""
-    total = database.query(SkillMatch).count()
-    skillmatch_list = database.query(SkillMatch).offset(skip).limit(limit).all()
-    # By default, return flat entities (for charts/widgets)
-    # Use detailed=true to get entities with relationships
-    if not detailed:
-        return {
-            "total": total,
-            "skip": skip,
-            "limit": limit,
-            "data": skillmatch_list
-        }
-
-    result = []
-    for skillmatch_item in skillmatch_list:
-        session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == skillmatch_item.id).all()
-        skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == skillmatch_item.id).all()
-        item_data = {
-            "skillmatch": skillmatch_item,
-            "session_ids": [x[0] for x in session_ids],            "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids]        }
-        result.append(item_data)
-    return {
-        "total": total,
-        "skip": skip,
-        "limit": limit,
-        "data": result
-    }
-
-
-@app.get("/skillmatch/search/", response_model=None, tags=["SkillMatch"])
-def search_skillmatch(
-    database: Session = Depends(get_db)
-) -> list:
-    """Search SkillMatch entities by attributes"""
-    query = database.query(SkillMatch)
-
-
-    results = query.all()
-    return results
-
-
-@app.get("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
-async def get_skillmatch(skillmatch_id: int, database: Session = Depends(get_db)) -> SkillMatch:
-    db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
-    if db_skillmatch is None:
-        raise HTTPException(status_code=404, detail="SkillMatch not found")
-
-    session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == db_skillmatch.id).all()
-    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
-    response_data = {
-        "skillmatch": db_skillmatch,
-        "session_ids": [x[0] for x in session_ids],        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids]}
-    return response_data
-
-
-
-@app.post("/skillmatch/", response_model=None, tags=["SkillMatch"])
-async def create_skillmatch(skillmatch_data: SkillMatchCreate, database: Session = Depends(get_db)) -> SkillMatch:
-
-    if skillmatch_data.user_3 is not None:
-        db_user_3 = database.query(User).filter(User.id == skillmatch_data.user_3).first()
-        if not db_user_3:
-            raise HTTPException(status_code=400, detail="User not found")
-    else:
-        raise HTTPException(status_code=400, detail="User ID is required")
-    if skillmatch_data.user_2 is not None:
-        db_user_2 = database.query(User).filter(User.id == skillmatch_data.user_2).first()
-        if not db_user_2:
-            raise HTTPException(status_code=400, detail="User not found")
-    else:
-        raise HTTPException(status_code=400, detail="User ID is required")
-
-    db_skillmatch = SkillMatch(
-        status=skillmatch_data.status,        startDate=skillmatch_data.startDate,        createdDate=skillmatch_data.createdDate,        matchId=skillmatch_data.matchId,        user_3_id=skillmatch_data.user_3,        user_2_id=skillmatch_data.user_2        )
-
-    database.add(db_skillmatch)
-    database.commit()
-    database.refresh(db_skillmatch)
-
-    if skillmatch_data.session:
-        # Validate that all Session IDs exist
-        for session_id in skillmatch_data.session:
-            db_session = database.query(Session).filter(Session.id == session_id).first()
-            if not db_session:
-                raise HTTPException(status_code=400, detail=f"Session with id {session_id} not found")
-
-        # Update the related entities with the new foreign key
-        database.query(Session).filter(Session.id.in_(skillmatch_data.session)).update(
-            {Session.skillmatch_1_id: db_skillmatch.id}, synchronize_session=False
-        )
-        database.commit()
-    if skillmatch_data.skillrequest_1:
-        # Validate that all SkillRequest IDs exist
-        for skillrequest_id in skillmatch_data.skillrequest_1:
-            db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
-            if not db_skillrequest:
-                raise HTTPException(status_code=400, detail=f"SkillRequest with id {skillrequest_id} not found")
-
-        # Update the related entities with the new foreign key
-        database.query(SkillRequest).filter(SkillRequest.id.in_(skillmatch_data.skillrequest_1)).update(
-            {SkillRequest.skillmatch_2_id: db_skillmatch.id}, synchronize_session=False
-        )
-        database.commit()
-
-
-
-    session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == db_skillmatch.id).all()
-    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
-    response_data = {
-        "skillmatch": db_skillmatch,
-        "session_ids": [x[0] for x in session_ids],        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids]    }
-    return response_data
-
-
-@app.post("/skillmatch/bulk/", response_model=None, tags=["SkillMatch"])
-async def bulk_create_skillmatch(items: list[SkillMatchCreate], database: Session = Depends(get_db)) -> dict:
-    """Create multiple SkillMatch entities at once"""
-    created_items = []
-    errors = []
-
-    for idx, item_data in enumerate(items):
-        try:
-            # Basic validation for each item
-            if not item_data.user_3:
-                raise ValueError("User ID is required")
-            if not item_data.user_2:
-                raise ValueError("User ID is required")
-
-            db_skillmatch = SkillMatch(
-                status=item_data.status,                startDate=item_data.startDate,                createdDate=item_data.createdDate,                matchId=item_data.matchId,                user_3_id=item_data.user_3,                user_2_id=item_data.user_2            )
-            database.add(db_skillmatch)
-            database.flush()  # Get ID without committing
-            created_items.append(db_skillmatch.id)
-        except Exception as e:
-            errors.append({"index": idx, "error": str(e)})
-
-    if errors:
-        database.rollback()
-        raise HTTPException(status_code=400, detail={"message": "Bulk creation failed", "errors": errors})
-
-    database.commit()
-    return {
-        "created_count": len(created_items),
-        "created_ids": created_items,
-        "message": f"Successfully created {len(created_items)} SkillMatch entities"
-    }
-
-
-@app.delete("/skillmatch/bulk/", response_model=None, tags=["SkillMatch"])
-async def bulk_delete_skillmatch(ids: list[int], database: Session = Depends(get_db)) -> dict:
-    """Delete multiple SkillMatch entities at once"""
-    deleted_count = 0
-    not_found = []
-
-    for item_id in ids:
-        db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == item_id).first()
-        if db_skillmatch:
-            database.delete(db_skillmatch)
-            deleted_count += 1
-        else:
-            not_found.append(item_id)
-
-    database.commit()
-
-    return {
-        "deleted_count": deleted_count,
-        "not_found": not_found,
-        "message": f"Successfully deleted {deleted_count} SkillMatch entities"
-    }
-
-@app.put("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
-async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreate, database: Session = Depends(get_db)) -> SkillMatch:
-    db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
-    if db_skillmatch is None:
-        raise HTTPException(status_code=404, detail="SkillMatch not found")
-
-    setattr(db_skillmatch, 'status', skillmatch_data.status)
-    setattr(db_skillmatch, 'startDate', skillmatch_data.startDate)
-    setattr(db_skillmatch, 'createdDate', skillmatch_data.createdDate)
-    setattr(db_skillmatch, 'matchId', skillmatch_data.matchId)
-    if skillmatch_data.user_3 is not None:
-        db_user_3 = database.query(User).filter(User.id == skillmatch_data.user_3).first()
-        if not db_user_3:
-            raise HTTPException(status_code=400, detail="User not found")
-        setattr(db_skillmatch, 'user_3_id', skillmatch_data.user_3)
-    if skillmatch_data.user_2 is not None:
-        db_user_2 = database.query(User).filter(User.id == skillmatch_data.user_2).first()
-        if not db_user_2:
-            raise HTTPException(status_code=400, detail="User not found")
-        setattr(db_skillmatch, 'user_2_id', skillmatch_data.user_2)
-    if skillmatch_data.session is not None:
-        # Clear all existing relationships (set foreign key to NULL)
-        database.query(Session).filter(Session.skillmatch_1_id == db_skillmatch.id).update(
-            {Session.skillmatch_1_id: None}, synchronize_session=False
-        )
-
-        # Set new relationships if list is not empty
-        if skillmatch_data.session:
-            # Validate that all IDs exist
-            for session_id in skillmatch_data.session:
-                db_session = database.query(Session).filter(Session.id == session_id).first()
-                if not db_session:
-                    raise HTTPException(status_code=400, detail=f"Session with id {session_id} not found")
-
-            # Update the related entities with the new foreign key
-            database.query(Session).filter(Session.id.in_(skillmatch_data.session)).update(
-                {Session.skillmatch_1_id: db_skillmatch.id}, synchronize_session=False
-            )
-    if skillmatch_data.skillrequest_1 is not None:
-        # Clear all existing relationships (set foreign key to NULL)
-        database.query(SkillRequest).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).update(
-            {SkillRequest.skillmatch_2_id: None}, synchronize_session=False
-        )
-
-        # Set new relationships if list is not empty
-        if skillmatch_data.skillrequest_1:
-            # Validate that all IDs exist
-            for skillrequest_id in skillmatch_data.skillrequest_1:
-                db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
-                if not db_skillrequest:
-                    raise HTTPException(status_code=400, detail=f"SkillRequest with id {skillrequest_id} not found")
-
-            # Update the related entities with the new foreign key
-            database.query(SkillRequest).filter(SkillRequest.id.in_(skillmatch_data.skillrequest_1)).update(
-                {SkillRequest.skillmatch_2_id: db_skillmatch.id}, synchronize_session=False
-            )
-    database.commit()
-    database.refresh(db_skillmatch)
-
-    session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == db_skillmatch.id).all()
-    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
-    response_data = {
-        "skillmatch": db_skillmatch,
-        "session_ids": [x[0] for x in session_ids],        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids]    }
-    return response_data
-
-
-@app.delete("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
-async def delete_skillmatch(skillmatch_id: int, database: Session = Depends(get_db)):
-    db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
-    if db_skillmatch is None:
-        raise HTTPException(status_code=404, detail="SkillMatch not found")
-    database.delete(db_skillmatch)
-    database.commit()
-    return db_skillmatch
-
-
-
 
 
 ############################################
@@ -1106,15 +377,13 @@ async def create_skillrequest(skillrequest_data: SkillRequestCreate, database: S
             raise HTTPException(status_code=400, detail="User not found")
     else:
         raise HTTPException(status_code=400, detail="User ID is required")
-    if skillrequest_data.skillmatch_2 is not None:
+    if skillrequest_data.skillmatch_2 :
         db_skillmatch_2 = database.query(SkillMatch).filter(SkillMatch.id == skillrequest_data.skillmatch_2).first()
         if not db_skillmatch_2:
             raise HTTPException(status_code=400, detail="SkillMatch not found")
-    else:
-        raise HTTPException(status_code=400, detail="SkillMatch ID is required")
 
     db_skillrequest = SkillRequest(
-        requestId=skillrequest_data.requestId,        status=skillrequest_data.status,        deadlineDate=skillrequest_data.deadlineDate,        createdDate=skillrequest_data.createdDate,        user_1_id=skillrequest_data.user_1,        skillmatch_2_id=skillrequest_data.skillmatch_2        )
+        deadlineDate=skillrequest_data.deadlineDate,        createdDate=skillrequest_data.createdDate,        status=skillrequest_data.status,        requestId=skillrequest_data.requestId,        user_1_id=skillrequest_data.user_1,        skillmatch_2_id=skillrequest_data.skillmatch_2        )
 
     database.add(db_skillrequest)
     database.commit()
@@ -1137,11 +406,9 @@ async def bulk_create_skillrequest(items: list[SkillRequestCreate], database: Se
             # Basic validation for each item
             if not item_data.user_1:
                 raise ValueError("User ID is required")
-            if not item_data.skillmatch_2:
-                raise ValueError("SkillMatch ID is required")
 
             db_skillrequest = SkillRequest(
-                requestId=item_data.requestId,                status=item_data.status,                deadlineDate=item_data.deadlineDate,                createdDate=item_data.createdDate,                user_1_id=item_data.user_1,                skillmatch_2_id=item_data.skillmatch_2            )
+                deadlineDate=item_data.deadlineDate,                createdDate=item_data.createdDate,                status=item_data.status,                requestId=item_data.requestId,                user_1_id=item_data.user_1,                skillmatch_2_id=item_data.skillmatch_2            )
             database.add(db_skillrequest)
             database.flush()  # Get ID without committing
             created_items.append(db_skillrequest.id)
@@ -1188,10 +455,10 @@ async def update_skillrequest(skillrequest_id: int, skillrequest_data: SkillRequ
     if db_skillrequest is None:
         raise HTTPException(status_code=404, detail="SkillRequest not found")
 
-    setattr(db_skillrequest, 'requestId', skillrequest_data.requestId)
-    setattr(db_skillrequest, 'status', skillrequest_data.status)
     setattr(db_skillrequest, 'deadlineDate', skillrequest_data.deadlineDate)
     setattr(db_skillrequest, 'createdDate', skillrequest_data.createdDate)
+    setattr(db_skillrequest, 'status', skillrequest_data.status)
+    setattr(db_skillrequest, 'requestId', skillrequest_data.requestId)
     if skillrequest_data.user_1 is not None:
         db_user_1 = database.query(User).filter(User.id == skillrequest_data.user_1).first()
         if not db_user_1:
@@ -1202,6 +469,8 @@ async def update_skillrequest(skillrequest_id: int, skillrequest_data: SkillRequ
         if not db_skillmatch_2:
             raise HTTPException(status_code=400, detail="SkillMatch not found")
         setattr(db_skillrequest, 'skillmatch_2_id', skillrequest_data.skillmatch_2)
+    else:
+        setattr(db_skillrequest, 'skillmatch_2_id', None)
     database.commit()
     database.refresh(db_skillrequest)
 
@@ -1328,7 +597,7 @@ async def create_skill(skill_data: SkillCreate, database: Session = Depends(get_
 
 
     db_skill = Skill(
-        category=skill_data.category,        description=skill_data.description,        skillName=skill_data.skillName,        skillLevel=skill_data.skillLevel,        skillId=skill_data.skillId        )
+        skillName=skill_data.skillName,        skillId=skill_data.skillId,        category=skill_data.category,        skillLevel=skill_data.skillLevel,        description=skill_data.description        )
 
     database.add(db_skill)
     database.commit()
@@ -1367,7 +636,7 @@ async def bulk_create_skill(items: list[SkillCreate], database: Session = Depend
             # Basic validation for each item
 
             db_skill = Skill(
-                category=item_data.category,                description=item_data.description,                skillName=item_data.skillName,                skillLevel=item_data.skillLevel,                skillId=item_data.skillId            )
+                skillName=item_data.skillName,                skillId=item_data.skillId,                category=item_data.category,                skillLevel=item_data.skillLevel,                description=item_data.description            )
             database.add(db_skill)
             database.flush()  # Get ID without committing
             created_items.append(db_skill.id)
@@ -1414,11 +683,11 @@ async def update_skill(skill_id: int, skill_data: SkillCreate, database: Session
     if db_skill is None:
         raise HTTPException(status_code=404, detail="Skill not found")
 
-    setattr(db_skill, 'category', skill_data.category)
-    setattr(db_skill, 'description', skill_data.description)
     setattr(db_skill, 'skillName', skill_data.skillName)
-    setattr(db_skill, 'skillLevel', skill_data.skillLevel)
     setattr(db_skill, 'skillId', skill_data.skillId)
+    setattr(db_skill, 'category', skill_data.category)
+    setattr(db_skill, 'skillLevel', skill_data.skillLevel)
+    setattr(db_skill, 'description', skill_data.description)
     if skill_data.userskill_1 is not None:
         # Clear all existing relationships (set foreign key to NULL)
         database.query(UserSkill).filter(UserSkill.skill_id == db_skill.id).update(
@@ -1474,8 +743,8 @@ def get_all_userskill(detailed: bool = False, database: Session = Depends(get_db
     if detailed:
         # Eagerly load all relationships to avoid N+1 queries
         query = database.query(UserSkill)
-        query = query.options(joinedload(UserSkill.skill))
         query = query.options(joinedload(UserSkill.user))
+        query = query.options(joinedload(UserSkill.skill))
         userskill_list = query.all()
 
         # Serialize with relationships included
@@ -1485,13 +754,6 @@ def get_all_userskill(detailed: bool = False, database: Session = Depends(get_db
             item_dict.pop('_sa_instance_state', None)
 
             # Add many-to-one relationships (foreign keys for lookup columns)
-            if userskill_item.skill:
-                related_obj = userskill_item.skill
-                related_dict = related_obj.__dict__.copy()
-                related_dict.pop('_sa_instance_state', None)
-                item_dict['skill'] = related_dict
-            else:
-                item_dict['skill'] = None
             if userskill_item.user:
                 related_obj = userskill_item.user
                 related_dict = related_obj.__dict__.copy()
@@ -1499,6 +761,13 @@ def get_all_userskill(detailed: bool = False, database: Session = Depends(get_db
                 item_dict['user'] = related_dict
             else:
                 item_dict['user'] = None
+            if userskill_item.skill:
+                related_obj = userskill_item.skill
+                related_dict = related_obj.__dict__.copy()
+                related_dict.pop('_sa_instance_state', None)
+                item_dict['skill'] = related_dict
+            else:
+                item_dict['skill'] = None
 
 
             result.append(item_dict)
@@ -1556,21 +825,21 @@ async def get_userskill(userskill_id: int, database: Session = Depends(get_db)) 
 @app.post("/userskill/", response_model=None, tags=["UserSkill"])
 async def create_userskill(userskill_data: UserSkillCreate, database: Session = Depends(get_db)) -> UserSkill:
 
-    if userskill_data.skill is not None:
-        db_skill = database.query(Skill).filter(Skill.id == userskill_data.skill).first()
-        if not db_skill:
-            raise HTTPException(status_code=400, detail="Skill not found")
-    else:
-        raise HTTPException(status_code=400, detail="Skill ID is required")
     if userskill_data.user is not None:
         db_user = database.query(User).filter(User.id == userskill_data.user).first()
         if not db_user:
             raise HTTPException(status_code=400, detail="User not found")
     else:
         raise HTTPException(status_code=400, detail="User ID is required")
+    if userskill_data.skill is not None:
+        db_skill = database.query(Skill).filter(Skill.id == userskill_data.skill).first()
+        if not db_skill:
+            raise HTTPException(status_code=400, detail="Skill not found")
+    else:
+        raise HTTPException(status_code=400, detail="Skill ID is required")
 
     db_userskill = UserSkill(
-        certification=userskill_data.certification,        yearsOfExperience=userskill_data.yearsOfExperience,        skillId=userskill_data.skillId,        skillLevel=userskill_data.skillLevel,        skill_id=userskill_data.skill,        user_id=userskill_data.user        )
+        skillId=userskill_data.skillId,        yearsOfExperience=userskill_data.yearsOfExperience,        certification=userskill_data.certification,        skillLevel=userskill_data.skillLevel,        user_id=userskill_data.user,        skill_id=userskill_data.skill        )
 
     database.add(db_userskill)
     database.commit()
@@ -1591,13 +860,13 @@ async def bulk_create_userskill(items: list[UserSkillCreate], database: Session 
     for idx, item_data in enumerate(items):
         try:
             # Basic validation for each item
-            if not item_data.skill:
-                raise ValueError("Skill ID is required")
             if not item_data.user:
                 raise ValueError("User ID is required")
+            if not item_data.skill:
+                raise ValueError("Skill ID is required")
 
             db_userskill = UserSkill(
-                certification=item_data.certification,                yearsOfExperience=item_data.yearsOfExperience,                skillId=item_data.skillId,                skillLevel=item_data.skillLevel,                skill_id=item_data.skill,                user_id=item_data.user            )
+                skillId=item_data.skillId,                yearsOfExperience=item_data.yearsOfExperience,                certification=item_data.certification,                skillLevel=item_data.skillLevel,                user_id=item_data.user,                skill_id=item_data.skill            )
             database.add(db_userskill)
             database.flush()  # Get ID without committing
             created_items.append(db_userskill.id)
@@ -1644,20 +913,20 @@ async def update_userskill(userskill_id: int, userskill_data: UserSkillCreate, d
     if db_userskill is None:
         raise HTTPException(status_code=404, detail="UserSkill not found")
 
-    setattr(db_userskill, 'certification', userskill_data.certification)
-    setattr(db_userskill, 'yearsOfExperience', userskill_data.yearsOfExperience)
     setattr(db_userskill, 'skillId', userskill_data.skillId)
+    setattr(db_userskill, 'yearsOfExperience', userskill_data.yearsOfExperience)
+    setattr(db_userskill, 'certification', userskill_data.certification)
     setattr(db_userskill, 'skillLevel', userskill_data.skillLevel)
-    if userskill_data.skill is not None:
-        db_skill = database.query(Skill).filter(Skill.id == userskill_data.skill).first()
-        if not db_skill:
-            raise HTTPException(status_code=400, detail="Skill not found")
-        setattr(db_userskill, 'skill_id', userskill_data.skill)
     if userskill_data.user is not None:
         db_user = database.query(User).filter(User.id == userskill_data.user).first()
         if not db_user:
             raise HTTPException(status_code=400, detail="User not found")
         setattr(db_userskill, 'user_id', userskill_data.user)
+    if userskill_data.skill is not None:
+        db_skill = database.query(Skill).filter(Skill.id == userskill_data.skill).first()
+        if not db_skill:
+            raise HTTPException(status_code=400, detail="Skill not found")
+        setattr(db_userskill, 'skill_id', userskill_data.skill)
     database.commit()
     database.refresh(db_userskill)
 
@@ -1702,6 +971,12 @@ def get_all_user(detailed: bool = False, database: Session = Depends(get_db)) ->
             # Add many-to-one relationships (foreign keys for lookup columns)
 
             # Add many-to-many and one-to-many relationship objects (full details)
+            skillmatch_list = database.query(SkillMatch).filter(SkillMatch.user_3_id == user_item.id).all()
+            item_dict['skillmatch_3'] = []
+            for skillmatch_obj in skillmatch_list:
+                skillmatch_dict = skillmatch_obj.__dict__.copy()
+                skillmatch_dict.pop('_sa_instance_state', None)
+                item_dict['skillmatch_3'].append(skillmatch_dict)
             skillrequest_list = database.query(SkillRequest).filter(SkillRequest.user_1_id == user_item.id).all()
             item_dict['skillrequest'] = []
             for skillrequest_obj in skillrequest_list:
@@ -1714,12 +989,6 @@ def get_all_user(detailed: bool = False, database: Session = Depends(get_db)) ->
                 userskill_dict = userskill_obj.__dict__.copy()
                 userskill_dict.pop('_sa_instance_state', None)
                 item_dict['userskill'].append(userskill_dict)
-            skillmatch_list = database.query(SkillMatch).filter(SkillMatch.user_3_id == user_item.id).all()
-            item_dict['skillmatch_3'] = []
-            for skillmatch_obj in skillmatch_list:
-                skillmatch_dict = skillmatch_obj.__dict__.copy()
-                skillmatch_dict.pop('_sa_instance_state', None)
-                item_dict['skillmatch_3'].append(skillmatch_dict)
             skillmatch_list = database.query(SkillMatch).filter(SkillMatch.user_2_id == user_item.id).all()
             item_dict['skillmatch'] = []
             for skillmatch_obj in skillmatch_list:
@@ -1758,13 +1027,13 @@ def get_paginated_user(skip: int = 0, limit: int = 100, detailed: bool = False, 
 
     result = []
     for user_item in user_list:
+        skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == user_item.id).all()
         skillrequest_ids = database.query(SkillRequest.id).filter(SkillRequest.user_1_id == user_item.id).all()
         userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == user_item.id).all()
-        skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == user_item.id).all()
         skillmatch_ids = database.query(SkillMatch.id).filter(SkillMatch.user_2_id == user_item.id).all()
         item_data = {
             "user": user_item,
-            "skillrequest_ids": [x[0] for x in skillrequest_ids],            "userskill_ids": [x[0] for x in userskill_ids],            "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],            "skillmatch_ids": [x[0] for x in skillmatch_ids]        }
+            "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],            "skillrequest_ids": [x[0] for x in skillrequest_ids],            "userskill_ids": [x[0] for x in userskill_ids],            "skillmatch_ids": [x[0] for x in skillmatch_ids]        }
         result.append(item_data)
     return {
         "total": total,
@@ -1792,13 +1061,13 @@ async def get_user(user_id: int, database: Session = Depends(get_db)) -> User:
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
 
+    skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == db_user.id).all()
     skillrequest_ids = database.query(SkillRequest.id).filter(SkillRequest.user_1_id == db_user.id).all()
     userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == db_user.id).all()
-    skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == db_user.id).all()
     skillmatch_ids = database.query(SkillMatch.id).filter(SkillMatch.user_2_id == db_user.id).all()
     response_data = {
         "user": db_user,
-        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "userskill_ids": [x[0] for x in userskill_ids],        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],        "skillmatch_ids": [x[0] for x in skillmatch_ids]}
+        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "userskill_ids": [x[0] for x in userskill_ids],        "skillmatch_ids": [x[0] for x in skillmatch_ids]}
     return response_data
 
 
@@ -1808,12 +1077,24 @@ async def create_user(user_data: UserCreate, database: Session = Depends(get_db)
 
 
     db_user = User(
-        emailId=user_data.emailId,        userName=user_data.userName,        userId=user_data.userId        )
+        userName=user_data.userName,        emailId=user_data.emailId,        userId=user_data.userId        )
 
     database.add(db_user)
     database.commit()
     database.refresh(db_user)
 
+    if user_data.skillmatch_3:
+        # Validate that all SkillMatch IDs exist
+        for skillmatch_id in user_data.skillmatch_3:
+            db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
+            if not db_skillmatch:
+                raise HTTPException(status_code=400, detail=f"SkillMatch with id {skillmatch_id} not found")
+
+        # Update the related entities with the new foreign key
+        database.query(SkillMatch).filter(SkillMatch.id.in_(user_data.skillmatch_3)).update(
+            {SkillMatch.user_3_id: db_user.id}, synchronize_session=False
+        )
+        database.commit()
     if user_data.skillrequest:
         # Validate that all SkillRequest IDs exist
         for skillrequest_id in user_data.skillrequest:
@@ -1838,18 +1119,6 @@ async def create_user(user_data: UserCreate, database: Session = Depends(get_db)
             {UserSkill.user_id: db_user.id}, synchronize_session=False
         )
         database.commit()
-    if user_data.skillmatch_3:
-        # Validate that all SkillMatch IDs exist
-        for skillmatch_id in user_data.skillmatch_3:
-            db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
-            if not db_skillmatch:
-                raise HTTPException(status_code=400, detail=f"SkillMatch with id {skillmatch_id} not found")
-
-        # Update the related entities with the new foreign key
-        database.query(SkillMatch).filter(SkillMatch.id.in_(user_data.skillmatch_3)).update(
-            {SkillMatch.user_3_id: db_user.id}, synchronize_session=False
-        )
-        database.commit()
     if user_data.skillmatch:
         # Validate that all SkillMatch IDs exist
         for skillmatch_id in user_data.skillmatch:
@@ -1865,13 +1134,13 @@ async def create_user(user_data: UserCreate, database: Session = Depends(get_db)
 
 
 
+    skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == db_user.id).all()
     skillrequest_ids = database.query(SkillRequest.id).filter(SkillRequest.user_1_id == db_user.id).all()
     userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == db_user.id).all()
-    skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == db_user.id).all()
     skillmatch_ids = database.query(SkillMatch.id).filter(SkillMatch.user_2_id == db_user.id).all()
     response_data = {
         "user": db_user,
-        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "userskill_ids": [x[0] for x in userskill_ids],        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],        "skillmatch_ids": [x[0] for x in skillmatch_ids]    }
+        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "userskill_ids": [x[0] for x in userskill_ids],        "skillmatch_ids": [x[0] for x in skillmatch_ids]    }
     return response_data
 
 
@@ -1886,7 +1155,7 @@ async def bulk_create_user(items: list[UserCreate], database: Session = Depends(
             # Basic validation for each item
 
             db_user = User(
-                emailId=item_data.emailId,                userName=item_data.userName,                userId=item_data.userId            )
+                userName=item_data.userName,                emailId=item_data.emailId,                userId=item_data.userId            )
             database.add(db_user)
             database.flush()  # Get ID without committing
             created_items.append(db_user.id)
@@ -1933,9 +1202,27 @@ async def update_user(user_id: int, user_data: UserCreate, database: Session = D
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
 
-    setattr(db_user, 'emailId', user_data.emailId)
     setattr(db_user, 'userName', user_data.userName)
+    setattr(db_user, 'emailId', user_data.emailId)
     setattr(db_user, 'userId', user_data.userId)
+    if user_data.skillmatch_3 is not None:
+        # Clear all existing relationships (set foreign key to NULL)
+        database.query(SkillMatch).filter(SkillMatch.user_3_id == db_user.id).update(
+            {SkillMatch.user_3_id: None}, synchronize_session=False
+        )
+
+        # Set new relationships if list is not empty
+        if user_data.skillmatch_3:
+            # Validate that all IDs exist
+            for skillmatch_id in user_data.skillmatch_3:
+                db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
+                if not db_skillmatch:
+                    raise HTTPException(status_code=400, detail=f"SkillMatch with id {skillmatch_id} not found")
+
+            # Update the related entities with the new foreign key
+            database.query(SkillMatch).filter(SkillMatch.id.in_(user_data.skillmatch_3)).update(
+                {SkillMatch.user_3_id: db_user.id}, synchronize_session=False
+            )
     if user_data.skillrequest is not None:
         # Clear all existing relationships (set foreign key to NULL)
         database.query(SkillRequest).filter(SkillRequest.user_1_id == db_user.id).update(
@@ -1972,24 +1259,6 @@ async def update_user(user_id: int, user_data: UserCreate, database: Session = D
             database.query(UserSkill).filter(UserSkill.id.in_(user_data.userskill)).update(
                 {UserSkill.user_id: db_user.id}, synchronize_session=False
             )
-    if user_data.skillmatch_3 is not None:
-        # Clear all existing relationships (set foreign key to NULL)
-        database.query(SkillMatch).filter(SkillMatch.user_3_id == db_user.id).update(
-            {SkillMatch.user_3_id: None}, synchronize_session=False
-        )
-
-        # Set new relationships if list is not empty
-        if user_data.skillmatch_3:
-            # Validate that all IDs exist
-            for skillmatch_id in user_data.skillmatch_3:
-                db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
-                if not db_skillmatch:
-                    raise HTTPException(status_code=400, detail=f"SkillMatch with id {skillmatch_id} not found")
-
-            # Update the related entities with the new foreign key
-            database.query(SkillMatch).filter(SkillMatch.id.in_(user_data.skillmatch_3)).update(
-                {SkillMatch.user_3_id: db_user.id}, synchronize_session=False
-            )
     if user_data.skillmatch is not None:
         # Clear all existing relationships (set foreign key to NULL)
         database.query(SkillMatch).filter(SkillMatch.user_2_id == db_user.id).update(
@@ -2011,13 +1280,13 @@ async def update_user(user_id: int, user_data: UserCreate, database: Session = D
     database.commit()
     database.refresh(db_user)
 
+    skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == db_user.id).all()
     skillrequest_ids = database.query(SkillRequest.id).filter(SkillRequest.user_1_id == db_user.id).all()
     userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == db_user.id).all()
-    skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == db_user.id).all()
     skillmatch_ids = database.query(SkillMatch.id).filter(SkillMatch.user_2_id == db_user.id).all()
     response_data = {
         "user": db_user,
-        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "userskill_ids": [x[0] for x in userskill_ids],        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],        "skillmatch_ids": [x[0] for x in skillmatch_ids]    }
+        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "userskill_ids": [x[0] for x in userskill_ids],        "skillmatch_ids": [x[0] for x in skillmatch_ids]    }
     return response_data
 
 
@@ -2029,6 +1298,725 @@ async def delete_user(user_id: int, database: Session = Depends(get_db)):
     database.delete(db_user)
     database.commit()
     return db_user
+
+
+
+
+
+############################################
+#
+#   Session functions
+#
+############################################
+
+@app.get("/session/", response_model=None, tags=["Session"])
+def get_all_session(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+    from sqlalchemy.orm import joinedload
+
+    # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
+    if detailed:
+        # Eagerly load all relationships to avoid N+1 queries
+        query = database.query(Session)
+        query = query.options(joinedload(Session.review))
+        query = query.options(joinedload(Session.skillmatch_1))
+        session_list = query.all()
+
+        # Serialize with relationships included
+        result = []
+        for session_item in session_list:
+            item_dict = session_item.__dict__.copy()
+            item_dict.pop('_sa_instance_state', None)
+
+            # Add many-to-one relationships (foreign keys for lookup columns)
+            if session_item.review:
+                related_obj = session_item.review
+                related_dict = related_obj.__dict__.copy()
+                related_dict.pop('_sa_instance_state', None)
+                item_dict['review'] = related_dict
+            else:
+                item_dict['review'] = None
+            if session_item.skillmatch_1:
+                related_obj = session_item.skillmatch_1
+                related_dict = related_obj.__dict__.copy()
+                related_dict.pop('_sa_instance_state', None)
+                item_dict['skillmatch_1'] = related_dict
+            else:
+                item_dict['skillmatch_1'] = None
+
+
+            result.append(item_dict)
+        return result
+    else:
+        # Default: return flat entities (faster for charts/widgets without lookup columns)
+        return database.query(Session).all()
+
+
+@app.get("/session/count/", response_model=None, tags=["Session"])
+def get_count_session(database: Session = Depends(get_db)) -> dict:
+    """Get the total count of Session entities"""
+    count = database.query(Session).count()
+    return {"count": count}
+
+
+@app.get("/session/paginated/", response_model=None, tags=["Session"])
+def get_paginated_session(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+    """Get paginated list of Session entities"""
+    total = database.query(Session).count()
+    session_list = database.query(Session).offset(skip).limit(limit).all()
+    return {
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "data": session_list
+    }
+
+
+@app.get("/session/search/", response_model=None, tags=["Session"])
+def search_session(
+    database: Session = Depends(get_db)
+) -> list:
+    """Search Session entities by attributes"""
+    query = database.query(Session)
+
+
+    results = query.all()
+    return results
+
+
+@app.get("/session/{session_id}/", response_model=None, tags=["Session"])
+async def get_session(session_id: int, database: Session = Depends(get_db)) -> Session:
+    db_session = database.query(Session).filter(Session.id == session_id).first()
+    if db_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    response_data = {
+        "session": db_session,
+}
+    return response_data
+
+
+
+@app.post("/session/", response_model=None, tags=["Session"])
+async def create_session(session_data: SessionCreate, database: Session = Depends(get_db)) -> Session:
+
+    if session_data.skillmatch_1 is not None:
+        db_skillmatch_1 = database.query(SkillMatch).filter(SkillMatch.id == session_data.skillmatch_1).first()
+        if not db_skillmatch_1:
+            raise HTTPException(status_code=400, detail="SkillMatch not found")
+    else:
+        raise HTTPException(status_code=400, detail="SkillMatch ID is required")
+
+    db_session = Session(
+        sessionType=session_data.sessionType,        sessionId=session_data.sessionId,        duration=session_data.duration,        sessionDate=session_data.sessionDate,        skillmatch_1_id=session_data.skillmatch_1        )
+
+    database.add(db_session)
+    database.commit()
+    database.refresh(db_session)
+
+
+
+
+    return db_session
+
+
+@app.post("/session/bulk/", response_model=None, tags=["Session"])
+async def bulk_create_session(items: list[SessionCreate], database: Session = Depends(get_db)) -> dict:
+    """Create multiple Session entities at once"""
+    created_items = []
+    errors = []
+
+    for idx, item_data in enumerate(items):
+        try:
+            # Basic validation for each item
+            if not item_data.skillmatch_1:
+                raise ValueError("SkillMatch ID is required")
+
+            db_session = Session(
+                sessionType=item_data.sessionType,                sessionId=item_data.sessionId,                duration=item_data.duration,                sessionDate=item_data.sessionDate,                skillmatch_1_id=item_data.skillmatch_1            )
+            database.add(db_session)
+            database.flush()  # Get ID without committing
+            created_items.append(db_session.id)
+        except Exception as e:
+            errors.append({"index": idx, "error": str(e)})
+
+    if errors:
+        database.rollback()
+        raise HTTPException(status_code=400, detail={"message": "Bulk creation failed", "errors": errors})
+
+    database.commit()
+    return {
+        "created_count": len(created_items),
+        "created_ids": created_items,
+        "message": f"Successfully created {len(created_items)} Session entities"
+    }
+
+
+@app.delete("/session/bulk/", response_model=None, tags=["Session"])
+async def bulk_delete_session(ids: list[int], database: Session = Depends(get_db)) -> dict:
+    """Delete multiple Session entities at once"""
+    deleted_count = 0
+    not_found = []
+
+    for item_id in ids:
+        db_session = database.query(Session).filter(Session.id == item_id).first()
+        if db_session:
+            database.delete(db_session)
+            deleted_count += 1
+        else:
+            not_found.append(item_id)
+
+    database.commit()
+
+    return {
+        "deleted_count": deleted_count,
+        "not_found": not_found,
+        "message": f"Successfully deleted {deleted_count} Session entities"
+    }
+
+@app.put("/session/{session_id}/", response_model=None, tags=["Session"])
+async def update_session(session_id: int, session_data: SessionCreate, database: Session = Depends(get_db)) -> Session:
+    db_session = database.query(Session).filter(Session.id == session_id).first()
+    if db_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    setattr(db_session, 'sessionType', session_data.sessionType)
+    setattr(db_session, 'sessionId', session_data.sessionId)
+    setattr(db_session, 'duration', session_data.duration)
+    setattr(db_session, 'sessionDate', session_data.sessionDate)
+    if session_data.skillmatch_1 is not None:
+        db_skillmatch_1 = database.query(SkillMatch).filter(SkillMatch.id == session_data.skillmatch_1).first()
+        if not db_skillmatch_1:
+            raise HTTPException(status_code=400, detail="SkillMatch not found")
+        setattr(db_session, 'skillmatch_1_id', session_data.skillmatch_1)
+    database.commit()
+    database.refresh(db_session)
+
+    return db_session
+
+
+@app.delete("/session/{session_id}/", response_model=None, tags=["Session"])
+async def delete_session(session_id: int, database: Session = Depends(get_db)):
+    db_session = database.query(Session).filter(Session.id == session_id).first()
+    if db_session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+    database.delete(db_session)
+    database.commit()
+    return db_session
+
+
+
+
+
+############################################
+#
+#   Review functions
+#
+############################################
+
+@app.get("/review/", response_model=None, tags=["Review"])
+def get_all_review(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+    from sqlalchemy.orm import joinedload
+
+    # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
+    if detailed:
+        # Eagerly load all relationships to avoid N+1 queries
+        query = database.query(Review)
+        query = query.options(joinedload(Review.session_1))
+        review_list = query.all()
+
+        # Serialize with relationships included
+        result = []
+        for review_item in review_list:
+            item_dict = review_item.__dict__.copy()
+            item_dict.pop('_sa_instance_state', None)
+
+            # Add many-to-one relationships (foreign keys for lookup columns)
+            if review_item.session_1:
+                related_obj = review_item.session_1
+                related_dict = related_obj.__dict__.copy()
+                related_dict.pop('_sa_instance_state', None)
+                item_dict['session_1'] = related_dict
+            else:
+                item_dict['session_1'] = None
+
+
+            result.append(item_dict)
+        return result
+    else:
+        # Default: return flat entities (faster for charts/widgets without lookup columns)
+        return database.query(Review).all()
+
+
+@app.get("/review/count/", response_model=None, tags=["Review"])
+def get_count_review(database: Session = Depends(get_db)) -> dict:
+    """Get the total count of Review entities"""
+    count = database.query(Review).count()
+    return {"count": count}
+
+
+@app.get("/review/paginated/", response_model=None, tags=["Review"])
+def get_paginated_review(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+    """Get paginated list of Review entities"""
+    total = database.query(Review).count()
+    review_list = database.query(Review).offset(skip).limit(limit).all()
+    return {
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "data": review_list
+    }
+
+
+@app.get("/review/search/", response_model=None, tags=["Review"])
+def search_review(
+    database: Session = Depends(get_db)
+) -> list:
+    """Search Review entities by attributes"""
+    query = database.query(Review)
+
+
+    results = query.all()
+    return results
+
+
+@app.get("/review/{review_id}/", response_model=None, tags=["Review"])
+async def get_review(review_id: int, database: Session = Depends(get_db)) -> Review:
+    db_review = database.query(Review).filter(Review.id == review_id).first()
+    if db_review is None:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    response_data = {
+        "review": db_review,
+}
+    return response_data
+
+
+
+@app.post("/review/", response_model=None, tags=["Review"])
+async def create_review(review_data: ReviewCreate, database: Session = Depends(get_db)) -> Review:
+
+    if review_data.session_1 is not None:
+        db_session_1 = database.query(Session).filter(Session.id == review_data.session_1).first()
+        if not db_session_1:
+            raise HTTPException(status_code=400, detail="Session not found")
+    else:
+        raise HTTPException(status_code=400, detail="Session ID is required")
+
+    db_review = Review(
+        comments=review_data.comments,        rating=review_data.rating,        reviewId=review_data.reviewId,        session_1_id=review_data.session_1        )
+
+    database.add(db_review)
+    database.commit()
+    database.refresh(db_review)
+
+
+
+
+    return db_review
+
+
+@app.post("/review/bulk/", response_model=None, tags=["Review"])
+async def bulk_create_review(items: list[ReviewCreate], database: Session = Depends(get_db)) -> dict:
+    """Create multiple Review entities at once"""
+    created_items = []
+    errors = []
+
+    for idx, item_data in enumerate(items):
+        try:
+            # Basic validation for each item
+            if not item_data.session_1:
+                raise ValueError("Session ID is required")
+
+            db_review = Review(
+                comments=item_data.comments,                rating=item_data.rating,                reviewId=item_data.reviewId,                session_1_id=item_data.session_1            )
+            database.add(db_review)
+            database.flush()  # Get ID without committing
+            created_items.append(db_review.id)
+        except Exception as e:
+            errors.append({"index": idx, "error": str(e)})
+
+    if errors:
+        database.rollback()
+        raise HTTPException(status_code=400, detail={"message": "Bulk creation failed", "errors": errors})
+
+    database.commit()
+    return {
+        "created_count": len(created_items),
+        "created_ids": created_items,
+        "message": f"Successfully created {len(created_items)} Review entities"
+    }
+
+
+@app.delete("/review/bulk/", response_model=None, tags=["Review"])
+async def bulk_delete_review(ids: list[int], database: Session = Depends(get_db)) -> dict:
+    """Delete multiple Review entities at once"""
+    deleted_count = 0
+    not_found = []
+
+    for item_id in ids:
+        db_review = database.query(Review).filter(Review.id == item_id).first()
+        if db_review:
+            database.delete(db_review)
+            deleted_count += 1
+        else:
+            not_found.append(item_id)
+
+    database.commit()
+
+    return {
+        "deleted_count": deleted_count,
+        "not_found": not_found,
+        "message": f"Successfully deleted {deleted_count} Review entities"
+    }
+
+@app.put("/review/{review_id}/", response_model=None, tags=["Review"])
+async def update_review(review_id: int, review_data: ReviewCreate, database: Session = Depends(get_db)) -> Review:
+    db_review = database.query(Review).filter(Review.id == review_id).first()
+    if db_review is None:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    setattr(db_review, 'comments', review_data.comments)
+    setattr(db_review, 'rating', review_data.rating)
+    setattr(db_review, 'reviewId', review_data.reviewId)
+    if review_data.session_1 is not None:
+        db_session_1 = database.query(Session).filter(Session.id == review_data.session_1).first()
+        if not db_session_1:
+            raise HTTPException(status_code=400, detail="Session not found")
+        setattr(db_review, 'session_1_id', review_data.session_1)
+    database.commit()
+    database.refresh(db_review)
+
+    return db_review
+
+
+@app.delete("/review/{review_id}/", response_model=None, tags=["Review"])
+async def delete_review(review_id: int, database: Session = Depends(get_db)):
+    db_review = database.query(Review).filter(Review.id == review_id).first()
+    if db_review is None:
+        raise HTTPException(status_code=404, detail="Review not found")
+    database.delete(db_review)
+    database.commit()
+    return db_review
+
+
+
+
+
+############################################
+#
+#   SkillMatch functions
+#
+############################################
+
+@app.get("/skillmatch/", response_model=None, tags=["SkillMatch"])
+def get_all_skillmatch(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+    from sqlalchemy.orm import joinedload
+
+    # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
+    if detailed:
+        # Eagerly load all relationships to avoid N+1 queries
+        query = database.query(SkillMatch)
+        query = query.options(joinedload(SkillMatch.user_3))
+        query = query.options(joinedload(SkillMatch.user_2))
+        skillmatch_list = query.all()
+
+        # Serialize with relationships included
+        result = []
+        for skillmatch_item in skillmatch_list:
+            item_dict = skillmatch_item.__dict__.copy()
+            item_dict.pop('_sa_instance_state', None)
+
+            # Add many-to-one relationships (foreign keys for lookup columns)
+            if skillmatch_item.user_3:
+                related_obj = skillmatch_item.user_3
+                related_dict = related_obj.__dict__.copy()
+                related_dict.pop('_sa_instance_state', None)
+                item_dict['user_3'] = related_dict
+            else:
+                item_dict['user_3'] = None
+            if skillmatch_item.user_2:
+                related_obj = skillmatch_item.user_2
+                related_dict = related_obj.__dict__.copy()
+                related_dict.pop('_sa_instance_state', None)
+                item_dict['user_2'] = related_dict
+            else:
+                item_dict['user_2'] = None
+
+            # Add many-to-many and one-to-many relationship objects (full details)
+            skillrequest_list = database.query(SkillRequest).filter(SkillRequest.skillmatch_2_id == skillmatch_item.id).all()
+            item_dict['skillrequest_1'] = []
+            for skillrequest_obj in skillrequest_list:
+                skillrequest_dict = skillrequest_obj.__dict__.copy()
+                skillrequest_dict.pop('_sa_instance_state', None)
+                item_dict['skillrequest_1'].append(skillrequest_dict)
+            session_list = database.query(Session).filter(Session.skillmatch_1_id == skillmatch_item.id).all()
+            item_dict['session'] = []
+            for session_obj in session_list:
+                session_dict = session_obj.__dict__.copy()
+                session_dict.pop('_sa_instance_state', None)
+                item_dict['session'].append(session_dict)
+
+            result.append(item_dict)
+        return result
+    else:
+        # Default: return flat entities (faster for charts/widgets without lookup columns)
+        return database.query(SkillMatch).all()
+
+
+@app.get("/skillmatch/count/", response_model=None, tags=["SkillMatch"])
+def get_count_skillmatch(database: Session = Depends(get_db)) -> dict:
+    """Get the total count of SkillMatch entities"""
+    count = database.query(SkillMatch).count()
+    return {"count": count}
+
+
+@app.get("/skillmatch/paginated/", response_model=None, tags=["SkillMatch"])
+def get_paginated_skillmatch(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+    """Get paginated list of SkillMatch entities"""
+    total = database.query(SkillMatch).count()
+    skillmatch_list = database.query(SkillMatch).offset(skip).limit(limit).all()
+    # By default, return flat entities (for charts/widgets)
+    # Use detailed=true to get entities with relationships
+    if not detailed:
+        return {
+            "total": total,
+            "skip": skip,
+            "limit": limit,
+            "data": skillmatch_list
+        }
+
+    result = []
+    for skillmatch_item in skillmatch_list:
+        skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == skillmatch_item.id).all()
+        session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == skillmatch_item.id).all()
+        item_data = {
+            "skillmatch": skillmatch_item,
+            "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids],            "session_ids": [x[0] for x in session_ids]        }
+        result.append(item_data)
+    return {
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "data": result
+    }
+
+
+@app.get("/skillmatch/search/", response_model=None, tags=["SkillMatch"])
+def search_skillmatch(
+    database: Session = Depends(get_db)
+) -> list:
+    """Search SkillMatch entities by attributes"""
+    query = database.query(SkillMatch)
+
+
+    results = query.all()
+    return results
+
+
+@app.get("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
+async def get_skillmatch(skillmatch_id: int, database: Session = Depends(get_db)) -> SkillMatch:
+    db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
+    if db_skillmatch is None:
+        raise HTTPException(status_code=404, detail="SkillMatch not found")
+
+    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
+    session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == db_skillmatch.id).all()
+    response_data = {
+        "skillmatch": db_skillmatch,
+        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids],        "session_ids": [x[0] for x in session_ids]}
+    return response_data
+
+
+
+@app.post("/skillmatch/", response_model=None, tags=["SkillMatch"])
+async def create_skillmatch(skillmatch_data: SkillMatchCreate, database: Session = Depends(get_db)) -> SkillMatch:
+
+    if skillmatch_data.user_3 is not None:
+        db_user_3 = database.query(User).filter(User.id == skillmatch_data.user_3).first()
+        if not db_user_3:
+            raise HTTPException(status_code=400, detail="User not found")
+    else:
+        raise HTTPException(status_code=400, detail="User ID is required")
+    if skillmatch_data.user_2 is not None:
+        db_user_2 = database.query(User).filter(User.id == skillmatch_data.user_2).first()
+        if not db_user_2:
+            raise HTTPException(status_code=400, detail="User not found")
+    else:
+        raise HTTPException(status_code=400, detail="User ID is required")
+
+    db_skillmatch = SkillMatch(
+        status=skillmatch_data.status,        matchId=skillmatch_data.matchId,        startDate=skillmatch_data.startDate,        createdDate=skillmatch_data.createdDate,        user_3_id=skillmatch_data.user_3,        user_2_id=skillmatch_data.user_2        )
+
+    database.add(db_skillmatch)
+    database.commit()
+    database.refresh(db_skillmatch)
+
+    if skillmatch_data.skillrequest_1:
+        # Validate that all SkillRequest IDs exist
+        for skillrequest_id in skillmatch_data.skillrequest_1:
+            db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
+            if not db_skillrequest:
+                raise HTTPException(status_code=400, detail=f"SkillRequest with id {skillrequest_id} not found")
+
+        # Update the related entities with the new foreign key
+        database.query(SkillRequest).filter(SkillRequest.id.in_(skillmatch_data.skillrequest_1)).update(
+            {SkillRequest.skillmatch_2_id: db_skillmatch.id}, synchronize_session=False
+        )
+        database.commit()
+    if skillmatch_data.session:
+        # Validate that all Session IDs exist
+        for session_id in skillmatch_data.session:
+            db_session = database.query(Session).filter(Session.id == session_id).first()
+            if not db_session:
+                raise HTTPException(status_code=400, detail=f"Session with id {session_id} not found")
+
+        # Update the related entities with the new foreign key
+        database.query(Session).filter(Session.id.in_(skillmatch_data.session)).update(
+            {Session.skillmatch_1_id: db_skillmatch.id}, synchronize_session=False
+        )
+        database.commit()
+
+
+
+    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
+    session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == db_skillmatch.id).all()
+    response_data = {
+        "skillmatch": db_skillmatch,
+        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids],        "session_ids": [x[0] for x in session_ids]    }
+    return response_data
+
+
+@app.post("/skillmatch/bulk/", response_model=None, tags=["SkillMatch"])
+async def bulk_create_skillmatch(items: list[SkillMatchCreate], database: Session = Depends(get_db)) -> dict:
+    """Create multiple SkillMatch entities at once"""
+    created_items = []
+    errors = []
+
+    for idx, item_data in enumerate(items):
+        try:
+            # Basic validation for each item
+            if not item_data.user_3:
+                raise ValueError("User ID is required")
+            if not item_data.user_2:
+                raise ValueError("User ID is required")
+
+            db_skillmatch = SkillMatch(
+                status=item_data.status,                matchId=item_data.matchId,                startDate=item_data.startDate,                createdDate=item_data.createdDate,                user_3_id=item_data.user_3,                user_2_id=item_data.user_2            )
+            database.add(db_skillmatch)
+            database.flush()  # Get ID without committing
+            created_items.append(db_skillmatch.id)
+        except Exception as e:
+            errors.append({"index": idx, "error": str(e)})
+
+    if errors:
+        database.rollback()
+        raise HTTPException(status_code=400, detail={"message": "Bulk creation failed", "errors": errors})
+
+    database.commit()
+    return {
+        "created_count": len(created_items),
+        "created_ids": created_items,
+        "message": f"Successfully created {len(created_items)} SkillMatch entities"
+    }
+
+
+@app.delete("/skillmatch/bulk/", response_model=None, tags=["SkillMatch"])
+async def bulk_delete_skillmatch(ids: list[int], database: Session = Depends(get_db)) -> dict:
+    """Delete multiple SkillMatch entities at once"""
+    deleted_count = 0
+    not_found = []
+
+    for item_id in ids:
+        db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == item_id).first()
+        if db_skillmatch:
+            database.delete(db_skillmatch)
+            deleted_count += 1
+        else:
+            not_found.append(item_id)
+
+    database.commit()
+
+    return {
+        "deleted_count": deleted_count,
+        "not_found": not_found,
+        "message": f"Successfully deleted {deleted_count} SkillMatch entities"
+    }
+
+@app.put("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
+async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreate, database: Session = Depends(get_db)) -> SkillMatch:
+    db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
+    if db_skillmatch is None:
+        raise HTTPException(status_code=404, detail="SkillMatch not found")
+
+    setattr(db_skillmatch, 'status', skillmatch_data.status)
+    setattr(db_skillmatch, 'matchId', skillmatch_data.matchId)
+    setattr(db_skillmatch, 'startDate', skillmatch_data.startDate)
+    setattr(db_skillmatch, 'createdDate', skillmatch_data.createdDate)
+    if skillmatch_data.user_3 is not None:
+        db_user_3 = database.query(User).filter(User.id == skillmatch_data.user_3).first()
+        if not db_user_3:
+            raise HTTPException(status_code=400, detail="User not found")
+        setattr(db_skillmatch, 'user_3_id', skillmatch_data.user_3)
+    if skillmatch_data.user_2 is not None:
+        db_user_2 = database.query(User).filter(User.id == skillmatch_data.user_2).first()
+        if not db_user_2:
+            raise HTTPException(status_code=400, detail="User not found")
+        setattr(db_skillmatch, 'user_2_id', skillmatch_data.user_2)
+    if skillmatch_data.skillrequest_1 is not None:
+        # Clear all existing relationships (set foreign key to NULL)
+        database.query(SkillRequest).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).update(
+            {SkillRequest.skillmatch_2_id: None}, synchronize_session=False
+        )
+
+        # Set new relationships if list is not empty
+        if skillmatch_data.skillrequest_1:
+            # Validate that all IDs exist
+            for skillrequest_id in skillmatch_data.skillrequest_1:
+                db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
+                if not db_skillrequest:
+                    raise HTTPException(status_code=400, detail=f"SkillRequest with id {skillrequest_id} not found")
+
+            # Update the related entities with the new foreign key
+            database.query(SkillRequest).filter(SkillRequest.id.in_(skillmatch_data.skillrequest_1)).update(
+                {SkillRequest.skillmatch_2_id: db_skillmatch.id}, synchronize_session=False
+            )
+    if skillmatch_data.session is not None:
+        # Clear all existing relationships (set foreign key to NULL)
+        database.query(Session).filter(Session.skillmatch_1_id == db_skillmatch.id).update(
+            {Session.skillmatch_1_id: None}, synchronize_session=False
+        )
+
+        # Set new relationships if list is not empty
+        if skillmatch_data.session:
+            # Validate that all IDs exist
+            for session_id in skillmatch_data.session:
+                db_session = database.query(Session).filter(Session.id == session_id).first()
+                if not db_session:
+                    raise HTTPException(status_code=400, detail=f"Session with id {session_id} not found")
+
+            # Update the related entities with the new foreign key
+            database.query(Session).filter(Session.id.in_(skillmatch_data.session)).update(
+                {Session.skillmatch_1_id: db_skillmatch.id}, synchronize_session=False
+            )
+    database.commit()
+    database.refresh(db_skillmatch)
+
+    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
+    session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == db_skillmatch.id).all()
+    response_data = {
+        "skillmatch": db_skillmatch,
+        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids],        "session_ids": [x[0] for x in session_ids]    }
+    return response_data
+
+
+@app.delete("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
+async def delete_skillmatch(skillmatch_id: int, database: Session = Depends(get_db)):
+    db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
+    if db_skillmatch is None:
+        raise HTTPException(status_code=404, detail="SkillMatch not found")
+    database.delete(db_skillmatch)
+    database.commit()
+    return db_skillmatch
 
 
 

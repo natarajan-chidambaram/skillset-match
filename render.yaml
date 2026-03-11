@@ -1,7 +1,7 @@
 services:
   # Backend API (Free tier - 750 hours/month, spins down after 15 min idle)
   - type: web
-    name: skillset-match-backend-0292bf
+    name: skillset-match-backend-e17258
     runtime: python
     plan: free
     buildCommand: pip install -r backend/requirements.txt
@@ -14,13 +14,13 @@ services:
 
   # Frontend (Free static site)
   - type: web
-    name: skillset-match-frontend-0292bf
+    name: skillset-match-frontend-e17258
     runtime: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/build
     envVars:
       - key: VITE_API_URL
-        value: https://skillset-match-backend-0292bf.onrender.com
+        value: https://skillset-match-backend-e17258.onrender.com
     headers:
       - path: /assets/*.js
         name: Content-Type

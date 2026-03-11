@@ -11,67 +11,67 @@ from pydantic import BaseModel, field_validator
 ############################################
 # Classes are defined here
 ############################################
+class SkillRequestCreate(BaseModel):
+    deadlineDate: date
+    createdDate: date
+    status: int
+    requestId: int
+    user_1: int  # N:1 Relationship (mandatory)
+    skillmatch_2: Optional[int] = None  # N:1 Relationship (optional)
+
+
+class SkillCreate(BaseModel):
+    skillName: str
+    skillId: int
+    category: str
+    skillLevel: str
+    description: str
+    userskill_1: Optional[List[int]] = None  # 1:N Relationship
+
+
+class UserSkillCreate(BaseModel):
+    skillId: int
+    yearsOfExperience: int
+    certification: bool
+    skillLevel: str
+    user: int  # N:1 Relationship (mandatory)
+    skill: int  # N:1 Relationship (mandatory)
+
+
+class UserCreate(BaseModel):
+    userName: str
+    emailId: str
+    userId: int
+    skillmatch_3: Optional[List[int]] = None  # 1:N Relationship
+    skillrequest: Optional[List[int]] = None  # 1:N Relationship
+    userskill: Optional[List[int]] = None  # 1:N Relationship
+    skillmatch: Optional[List[int]] = None  # 1:N Relationship
+
+
 class SessionCreate(BaseModel):
-    duration: int
-    sessionId: int
-    sessionDate: date
     sessionType: str
-    skillmatch_1: int  # N:1 Relationship (mandatory)
+    sessionId: int
+    duration: int
+    sessionDate: date
     review: Optional[int] = None  # 1:1 Relationship (optional)
+    skillmatch_1: int  # N:1 Relationship (mandatory)
 
 
 class ReviewCreate(BaseModel):
-    reviewId: int
     comments: str
     rating: int
+    reviewId: int
     session_1: int  # 1:1 Relationship (mandatory)
 
 
 class SkillMatchCreate(BaseModel):
     status: int
+    matchId: int
     startDate: date
     createdDate: date
-    matchId: int
-    session: Optional[List[int]] = None  # 1:N Relationship
-    user_3: int  # N:1 Relationship (mandatory)
     skillrequest_1: Optional[List[int]] = None  # 1:N Relationship
+    user_3: int  # N:1 Relationship (mandatory)
     user_2: int  # N:1 Relationship (mandatory)
-
-
-class SkillRequestCreate(BaseModel):
-    requestId: int
-    status: int
-    deadlineDate: date
-    createdDate: date
-    user_1: int  # N:1 Relationship (mandatory)
-    skillmatch_2: int  # N:1 Relationship (mandatory)
-
-
-class SkillCreate(BaseModel):
-    category: str
-    description: str
-    skillName: str
-    skillLevel: str
-    skillId: int
-    userskill_1: Optional[List[int]] = None  # 1:N Relationship
-
-
-class UserSkillCreate(BaseModel):
-    certification: bool
-    yearsOfExperience: int
-    skillId: int
-    skillLevel: str
-    skill: int  # N:1 Relationship (mandatory)
-    user: int  # N:1 Relationship (mandatory)
-
-
-class UserCreate(BaseModel):
-    emailId: str
-    userName: str
-    userId: int
-    skillrequest: Optional[List[int]] = None  # 1:N Relationship
-    userskill: Optional[List[int]] = None  # 1:N Relationship
-    skillmatch_3: Optional[List[int]] = None  # 1:N Relationship
-    skillmatch: Optional[List[int]] = None  # 1:N Relationship
+    session: Optional[List[int]] = None  # 1:N Relationship
 
 
