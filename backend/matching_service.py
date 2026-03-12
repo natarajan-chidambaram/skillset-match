@@ -1,12 +1,21 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import date
-from main_api import get_db
 
 # Import your BESSER-generated models — adjust names if different
 from sql_alchemy import SkillRequest, SkillMatch, UserSkill, Session as SessionModel, Review
 
 router = APIRouter()
+
+def get_db(): # added to avoid circular import issues. 
+    from main_api import SessionLocal
+    db = SessionLocal()
+    try:
+        yield db
+    except Exception:
+        db.rollback()
+    finally:
+        db.close()
 
 @router.post("/run-matching/")
 def run_matching(database: Session = Depends(get_db)):
