@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from pydantic_classes import *
 from sql_alchemy import *
+from matching_service import router as matching_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -71,6 +72,8 @@ app = FastAPI(
         {"name": "User Relationships", "description": "Manage User relationships"},
     ]
 )
+
+app.include_router(matching_router)
 
 # Enable CORS for all origins (for development)
 app.add_middleware(
