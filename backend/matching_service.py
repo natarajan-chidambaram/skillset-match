@@ -56,6 +56,7 @@ def run_matching(database: Session = Depends(get_db)):
             skill = database.query(Skill).filter(Skill.id == request.skill_1_id).first()
 
             session = SessionModel(
+                sessionId=int(date.today().strftime("%Y%m%d")) + len(matches_created),
                 sessionDate=date.today(),
                 skillmatch_1_id=match.id,
                 sessionType="ONLINE",
