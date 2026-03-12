@@ -8,103 +8,103 @@ from pydantic import BaseModel, field_validator
 # Enumerations are defined here
 ############################################
 
+class SkillRequestStatus(Enum):
+    MATCHED = "MATCHED"
+    OPEN = "OPEN"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+class SessionType(Enum):
+    ONLINE = "ONLINE"
+    OFFLINE = "OFFLINE"
+    HYBRID = "HYBRID"
+
+class UserSkillLevel(Enum):
+    AUTHORITY = "AUTHORITY"
+    COMPETENT = "COMPETENT"
+    NOVICE = "NOVICE"
+    EXPERT = "EXPERT"
+    PROFICIENT = "PROFICIENT"
+
+class TechSkillLevel(Enum):
+    BEGINNER = "BEGINNER"
+    ADVANCED = "ADVANCED"
+    INTERMEDIATE = "INTERMEDIATE"
+    EXPERT = "EXPERT"
+    MASTERCLASS = "MASTERCLASS"
+
 class SkillMatchStatus(Enum):
+    COMPLETED = "COMPLETED"
     ACTIVE = "ACTIVE"
     PENDING = "PENDING"
     REJECTED = "REJECTED"
-    COMPLETED = "COMPLETED"
-
-class SessionType(Enum):
-    HYBRID = "HYBRID"
-    ONLINE = "ONLINE"
-    OFFLINE = "OFFLINE"
-
-class TechSkillLevel(Enum):
-    INTERMEDIATE = "INTERMEDIATE"
-    ADVANCED = "ADVANCED"
-    EXPERT = "EXPERT"
-    BEGINNER = "BEGINNER"
-    MASTERCLASS = "MASTERCLASS"
-
-class SkillRequestStatus(Enum):
-    CANCELLED = "CANCELLED"
-    COMPLETED = "COMPLETED"
-    OPEN = "OPEN"
-    MATCHED = "MATCHED"
-
-class UserSkillLevel(Enum):
-    NOVICE = "NOVICE"
-    COMPETENT = "COMPETENT"
-    EXPERT = "EXPERT"
-    AUTHORITY = "AUTHORITY"
-    PROFICIENT = "PROFICIENT"
 
 ############################################
 # Classes are defined here
 ############################################
 class SessionCreate(BaseModel):
+    sessionType: SessionType
     duration: int
     sessionDate: date
     sessionId: int
-    sessionType: SessionType
-    skillmatch_1: int  # N:1 Relationship (mandatory)
     review: Optional[int] = None  # 1:1 Relationship (optional)
+    skillmatch_1: int  # N:1 Relationship (mandatory)
 
 
 class ReviewCreate(BaseModel):
+    comments: str
     reviewId: int
     rating: int
-    comments: str
     session_1: int  # 1:1 Relationship (mandatory)
 
 
 class SkillMatchCreate(BaseModel):
-    createdDate: date
     status: SkillMatchStatus
     matchId: int
+    createdDate: date
     startDate: date
-    session: Optional[List[int]] = None  # 1:N Relationship
     skillrequest_1: Optional[List[int]] = None  # 1:N Relationship
     user_2: int  # N:1 Relationship (mandatory)
+    session: Optional[List[int]] = None  # 1:N Relationship
     user_3: int  # N:1 Relationship (mandatory)
 
 
 class SkillRequestCreate(BaseModel):
-    status: SkillRequestStatus
     requestId: int
+    status: SkillRequestStatus
     createdDate: date
     deadlineDate: date
-    user_1: int  # N:1 Relationship (mandatory)
-    skill_1: int  # N:1 Relationship (mandatory)
     skillmatch_2: Optional[int] = None  # N:1 Relationship (optional)
+    skill_1: int  # N:1 Relationship (mandatory)
+    user_1: int  # N:1 Relationship (mandatory)
 
 
 class SkillCreate(BaseModel):
-    category: str
-    skillId: int
-    skillLevel: TechSkillLevel
     skillName: str
+    skillId: int
     description: str
-    skillrequest_2: Optional[List[int]] = None  # 1:N Relationship
+    skillLevel: TechSkillLevel
+    category: str
     userskill_1: Optional[List[int]] = None  # 1:N Relationship
+    skillrequest_2: Optional[List[int]] = None  # 1:N Relationship
 
 
 class UserSkillCreate(BaseModel):
-    certification: bool
-    skillId: int
     skillLevel: UserSkillLevel
+    certification: bool
     yearsOfExperience: int
-    user: int  # N:1 Relationship (mandatory)
+    skillId: int
     skill: int  # N:1 Relationship (mandatory)
+    user: int  # N:1 Relationship (mandatory)
 
 
 class UserCreate(BaseModel):
-    userName: str
     userId: int
+    userName: str
     emailId: str
-    skillrequest: Optional[List[int]] = None  # 1:N Relationship
     skillmatch: Optional[List[int]] = None  # 1:N Relationship
-    userskill: Optional[List[int]] = None  # 1:N Relationship
+    skillrequest: Optional[List[int]] = None  # 1:N Relationship
     skillmatch_3: Optional[List[int]] = None  # 1:N Relationship
+    userskill: Optional[List[int]] = None  # 1:N Relationship
 
 

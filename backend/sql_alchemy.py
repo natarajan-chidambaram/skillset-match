@@ -1,5 +1,4 @@
 import enum
-import os # for reading .env variable
 from typing import List, Optional
 from sqlalchemy import (
     create_engine, Column, ForeignKey, Table, Text, Boolean, String, Date, 
@@ -14,36 +13,36 @@ class Base(DeclarativeBase):
     pass
 
 # Definitions of Enumerations
+class SkillRequestStatus(enum.Enum):
+    MATCHED = "MATCHED"
+    OPEN = "OPEN"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+class SessionType(enum.Enum):
+    ONLINE = "ONLINE"
+    OFFLINE = "OFFLINE"
+    HYBRID = "HYBRID"
+
+class UserSkillLevel(enum.Enum):
+    AUTHORITY = "AUTHORITY"
+    COMPETENT = "COMPETENT"
+    NOVICE = "NOVICE"
+    EXPERT = "EXPERT"
+    PROFICIENT = "PROFICIENT"
+
+class TechSkillLevel(enum.Enum):
+    BEGINNER = "BEGINNER"
+    ADVANCED = "ADVANCED"
+    INTERMEDIATE = "INTERMEDIATE"
+    EXPERT = "EXPERT"
+    MASTERCLASS = "MASTERCLASS"
+
 class SkillMatchStatus(enum.Enum):
+    COMPLETED = "COMPLETED"
     ACTIVE = "ACTIVE"
     PENDING = "PENDING"
     REJECTED = "REJECTED"
-    COMPLETED = "COMPLETED"
-
-class SessionType(enum.Enum):
-    HYBRID = "HYBRID"
-    ONLINE = "ONLINE"
-    OFFLINE = "OFFLINE"
-
-class TechSkillLevel(enum.Enum):
-    INTERMEDIATE = "INTERMEDIATE"
-    ADVANCED = "ADVANCED"
-    EXPERT = "EXPERT"
-    BEGINNER = "BEGINNER"
-    MASTERCLASS = "MASTERCLASS"
-
-class SkillRequestStatus(enum.Enum):
-    CANCELLED = "CANCELLED"
-    COMPLETED = "COMPLETED"
-    OPEN = "OPEN"
-    MATCHED = "MATCHED"
-
-class UserSkillLevel(enum.Enum):
-    NOVICE = "NOVICE"
-    COMPETENT = "COMPETENT"
-    EXPERT = "EXPERT"
-    AUTHORITY = "AUTHORITY"
-    PROFICIENT = "PROFICIENT"
 
 
 # Tables definition for many-to-many relationships
@@ -52,10 +51,10 @@ class UserSkillLevel(enum.Enum):
 class Session(Base):
     __tablename__ = "session"
     id: Mapped[int] = mapped_column(primary_key=True)
+    sessionType: Mapped[SessionType] = mapped_column(Enum(SessionType))
     sessionId: Mapped[int] = mapped_column(Integer)
     sessionDate: Mapped[dt_date] = mapped_column(Date)
     duration: Mapped[int] = mapped_column(Integer)
-    sessionType: Mapped[SessionType] = mapped_column(Enum(SessionType))
     skillmatch_1_id: Mapped[int] = mapped_column(ForeignKey("skillmatch.id"))
 
 class Review(Base):
@@ -84,17 +83,17 @@ class SkillRequest(Base):
     status: Mapped[SkillRequestStatus] = mapped_column(Enum(SkillRequestStatus))
     deadlineDate: Mapped[dt_date] = mapped_column(Date)
     skill_1_id: Mapped[int] = mapped_column(ForeignKey("skill.id"))
-    user_1_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     skillmatch_2_id: Mapped[int] = mapped_column(ForeignKey("skillmatch.id"), nullable=True)
+    user_1_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
 class Skill(Base):
     __tablename__ = "skill"
     id: Mapped[int] = mapped_column(primary_key=True)
+    skillId: Mapped[int] = mapped_column(Integer)
     skillName: Mapped[str] = mapped_column(String(100))
     category: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(String(100))
     skillLevel: Mapped[TechSkillLevel] = mapped_column(Enum(TechSkillLevel))
-    skillId: Mapped[int] = mapped_column(Integer)
 
 class UserSkill(Base):
     __tablename__ = "userskill"
@@ -103,8 +102,8 @@ class UserSkill(Base):
     skillLevel: Mapped[UserSkillLevel] = mapped_column(Enum(UserSkillLevel))
     yearsOfExperience: Mapped[int] = mapped_column(Integer)
     certification: Mapped[bool] = mapped_column(Boolean)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
     skill_id: Mapped[int] = mapped_column(ForeignKey("skill.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
 
 class User(Base):
     __tablename__ = "user"
@@ -122,33 +121,33 @@ Session.review: Mapped["Review"] = relationship("Review", back_populates="sessio
 Review.session_1: Mapped["Session"] = relationship("Session", back_populates="review", foreign_keys=[Review.session_1_id])
 
 #--- Relationships of the skillmatch table
-SkillMatch.skillrequest_1: Mapped[List["SkillRequest"]] = relationship("SkillRequest", back_populates="skillmatch_2", foreign_keys=[SkillRequest.skillmatch_2_id])
-SkillMatch.session: Mapped[List["Session"]] = relationship("Session", back_populates="skillmatch_1", foreign_keys=[Session.skillmatch_1_id])
 SkillMatch.user_2: Mapped["User"] = relationship("User", back_populates="skillmatch", foreign_keys=[SkillMatch.user_2_id])
 SkillMatch.user_3: Mapped["User"] = relationship("User", back_populates="skillmatch_3", foreign_keys=[SkillMatch.user_3_id])
+SkillMatch.skillrequest_1: Mapped[List["SkillRequest"]] = relationship("SkillRequest", back_populates="skillmatch_2", foreign_keys=[SkillRequest.skillmatch_2_id])
+SkillMatch.session: Mapped[List["Session"]] = relationship("Session", back_populates="skillmatch_1", foreign_keys=[Session.skillmatch_1_id])
 
 #--- Relationships of the skillrequest table
 SkillRequest.skill_1: Mapped["Skill"] = relationship("Skill", back_populates="skillrequest_2", foreign_keys=[SkillRequest.skill_1_id])
-SkillRequest.user_1: Mapped["User"] = relationship("User", back_populates="skillrequest", foreign_keys=[SkillRequest.user_1_id])
 SkillRequest.skillmatch_2: Mapped["SkillMatch"] = relationship("SkillMatch", back_populates="skillrequest_1", foreign_keys=[SkillRequest.skillmatch_2_id])
+SkillRequest.user_1: Mapped["User"] = relationship("User", back_populates="skillrequest", foreign_keys=[SkillRequest.user_1_id])
 
 #--- Relationships of the skill table
-Skill.skillrequest_2: Mapped[List["SkillRequest"]] = relationship("SkillRequest", back_populates="skill_1", foreign_keys=[SkillRequest.skill_1_id])
 Skill.userskill_1: Mapped[List["UserSkill"]] = relationship("UserSkill", back_populates="skill", foreign_keys=[UserSkill.skill_id])
+Skill.skillrequest_2: Mapped[List["SkillRequest"]] = relationship("SkillRequest", back_populates="skill_1", foreign_keys=[SkillRequest.skill_1_id])
 
 #--- Relationships of the userskill table
-UserSkill.user: Mapped["User"] = relationship("User", back_populates="userskill", foreign_keys=[UserSkill.user_id])
 UserSkill.skill: Mapped["Skill"] = relationship("Skill", back_populates="userskill_1", foreign_keys=[UserSkill.skill_id])
+UserSkill.user: Mapped["User"] = relationship("User", back_populates="userskill", foreign_keys=[UserSkill.user_id])
 
 #--- Relationships of the user table
-User.skillmatch: Mapped[List["SkillMatch"]] = relationship("SkillMatch", back_populates="user_2", foreign_keys=[SkillMatch.user_2_id])
 User.skillmatch_3: Mapped[List["SkillMatch"]] = relationship("SkillMatch", back_populates="user_3", foreign_keys=[SkillMatch.user_3_id])
+User.skillmatch: Mapped[List["SkillMatch"]] = relationship("SkillMatch", back_populates="user_2", foreign_keys=[SkillMatch.user_2_id])
 User.userskill: Mapped[List["UserSkill"]] = relationship("UserSkill", back_populates="user", foreign_keys=[UserSkill.user_id])
 User.skillrequest: Mapped[List["SkillRequest"]] = relationship("SkillRequest", back_populates="user_1", foreign_keys=[SkillRequest.user_1_id])
 
 # Database connection
 DATABASE_URL = "sqlite:///Class_Diagram.db"  # SQLite connection
-engine = create_engine(os.getenv("DATABASE_URL"))
+engine = create_engine(DATABASE_URL, echo=True)
 
 # Create tables in the database
 Base.metadata.create_all(engine, checkfirst=True)
