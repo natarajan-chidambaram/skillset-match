@@ -8,91 +8,92 @@ from pydantic import BaseModel, field_validator
 # Enumerations are defined here
 ############################################
 
-class SkillRequestStatus(Enum):
-    MATCHED = "MATCHED"
-    OPEN = "OPEN"
-    COMPLETED = "COMPLETED"
-    CANCELLED = "CANCELLED"
-
-class SessionType(Enum):
-    ONLINE = "ONLINE"
-    OFFLINE = "OFFLINE"
-    HYBRID = "HYBRID"
-
 class UserSkillLevel(Enum):
+    PROFICIENT = "PROFICIENT"
+    NOVICE = "NOVICE"
     AUTHORITY = "AUTHORITY"
     COMPETENT = "COMPETENT"
-    NOVICE = "NOVICE"
     EXPERT = "EXPERT"
-    PROFICIENT = "PROFICIENT"
+
+class SkillMatchStatus(Enum):
+    PENDING = "PENDING"
+    ACTIVE = "ACTIVE"
+    REJECTED = "REJECTED"
+    COMPLETED = "COMPLETED"
+
+class SessionType(Enum):
+    OFFLINE = "OFFLINE"
+    HYBRID = "HYBRID"
+    ONLINE = "ONLINE"
 
 class TechSkillLevel(Enum):
-    BEGINNER = "BEGINNER"
-    ADVANCED = "ADVANCED"
     INTERMEDIATE = "INTERMEDIATE"
     EXPERT = "EXPERT"
     MASTERCLASS = "MASTERCLASS"
+    BEGINNER = "BEGINNER"
+    ADVANCED = "ADVANCED"
 
-class SkillMatchStatus(Enum):
+class SkillRequestStatus(Enum):
+    CANCELLED = "CANCELLED"
     COMPLETED = "COMPLETED"
-    ACTIVE = "ACTIVE"
-    PENDING = "PENDING"
-    REJECTED = "REJECTED"
+    OPEN = "OPEN"
+    MATCHED = "MATCHED"
 
 ############################################
 # Classes are defined here
 ############################################
 class SessionCreate(BaseModel):
-    sessionType: SessionType
     duration: int
-    sessionDate: date
     sessionId: int
-    review: Optional[int] = None  # 1:1 Relationship (optional)
+    sessionDate: date
+    sessionType: SessionType
     skillmatch_1: int  # N:1 Relationship (mandatory)
+    review: Optional[int] = None  # 1:1 Relationship (optional)
 
 
 class ReviewCreate(BaseModel):
-    comments: str
     reviewId: int
     rating: int
+    comments: str
     session_1: int  # 1:1 Relationship (mandatory)
 
 
 class SkillMatchCreate(BaseModel):
+    startDate: date
+    createdDate: date
     status: SkillMatchStatus
     matchId: int
-    createdDate: date
-    startDate: date
-    skillrequest_1: Optional[List[int]] = None  # 1:N Relationship
     user_2: int  # N:1 Relationship (mandatory)
     session: Optional[List[int]] = None  # 1:N Relationship
+    skillrequest_1: Optional[List[int]] = None  # 1:N Relationship
     user_3: int  # N:1 Relationship (mandatory)
 
 
 class SkillRequestCreate(BaseModel):
-    requestId: int
-    status: SkillRequestStatus
-    createdDate: date
     deadlineDate: date
+    status: SkillRequestStatus
+    requestId: int
+    createdDate: date
     skillmatch_2: Optional[int] = None  # N:1 Relationship (optional)
     skill_1: int  # N:1 Relationship (mandatory)
     user_1: int  # N:1 Relationship (mandatory)
 
 
 class SkillCreate(BaseModel):
-    skillName: str
-    skillId: int
-    description: str
     skillLevel: TechSkillLevel
+    estimatedDuration: int
     category: str
-    userskill_1: Optional[List[int]] = None  # 1:N Relationship
+    skillName: str
+    description: str
+    skillId: int
     skillrequest_2: Optional[List[int]] = None  # 1:N Relationship
+    userskill_1: Optional[List[int]] = None  # 1:N Relationship
 
 
 class UserSkillCreate(BaseModel):
-    skillLevel: UserSkillLevel
     certification: bool
     yearsOfExperience: int
+    skillLevel: UserSkillLevel
     skillId: int
     skill: int  # N:1 Relationship (mandatory)
     user: int  # N:1 Relationship (mandatory)
@@ -100,11 +101,11 @@ class UserSkillCreate(BaseModel):
 
 class UserCreate(BaseModel):
     userId: int
-    userName: str
     emailId: str
+    userName: str
     skillmatch: Optional[List[int]] = None  # 1:N Relationship
+    userskill: Optional[List[int]] = None  # 1:N Relationship
     skillrequest: Optional[List[int]] = None  # 1:N Relationship
     skillmatch_3: Optional[List[int]] = None  # 1:N Relationship
-    userskill: Optional[List[int]] = None  # 1:N Relationship
 
 

@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from pydantic_classes import *
 from sql_alchemy import *
-from matching_service import router as matching_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,25 +24,15 @@ logger = logging.getLogger(__name__)
 def init_db():
     SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/Class_Diagram.db")
     # Ensure local SQLite directory exists (safe no-op for other DBs)
-
-    if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
-        os.makedirs("data", exist_ok=True)
-        engine = create_engine(
-            SQLALCHEMY_DATABASE_URL,
-            connect_args={"check_same_thread": False},
-            pool_size=10,
-            max_overflow=20,
-            pool_pre_ping=True,
-            echo=False
-        )
-    else:
-        engine = create_engine(
-            SQLALCHEMY_DATABASE_URL,
-            pool_size=10,
-            max_overflow=20,
-            pool_pre_ping=True,
-            echo=False
-        )
+    os.makedirs("data", exist_ok=True)
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,
+        echo=False
+    )
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     Base.metadata.create_all(bind=engine)
     return SessionLocal
@@ -72,8 +61,6 @@ app = FastAPI(
         {"name": "User Relationships", "description": "Manage User relationships"},
     ]
 )
-
-app.include_router(matching_router)
 
 # Enable CORS for all origins (for development)
 app.add_middleware(
@@ -302,8 +289,8 @@ def get_all_session(detailed: bool = False, database: Session = Depends(get_db))
     if detailed:
         # Eagerly load all relationships to avoid N+1 queries
         query = database.query(Session)
-        query = query.options(joinedload(Session.review))
         query = query.options(joinedload(Session.skillmatch_1))
+        query = query.options(joinedload(Session.review))
         session_list = query.all()
 
         # Serialize with relationships included
@@ -313,13 +300,6 @@ def get_all_session(detailed: bool = False, database: Session = Depends(get_db))
             item_dict.pop('_sa_instance_state', None)
 
             # Add many-to-one relationships (foreign keys for lookup columns)
-            if session_item.review:
-                related_obj = session_item.review
-                related_dict = related_obj.__dict__.copy()
-                related_dict.pop('_sa_instance_state', None)
-                item_dict['review'] = related_dict
-            else:
-                item_dict['review'] = None
             if session_item.skillmatch_1:
                 related_obj = session_item.skillmatch_1
                 related_dict = related_obj.__dict__.copy()
@@ -327,6 +307,13 @@ def get_all_session(detailed: bool = False, database: Session = Depends(get_db))
                 item_dict['skillmatch_1'] = related_dict
             else:
                 item_dict['skillmatch_1'] = None
+            if session_item.review:
+                related_obj = session_item.review
+                related_dict = related_obj.__dict__.copy()
+                related_dict.pop('_sa_instance_state', None)
+                item_dict['review'] = related_dict
+            else:
+                item_dict['review'] = None
 
 
             result.append(item_dict)
@@ -392,7 +379,7 @@ async def create_session(session_data: SessionCreate, database: Session = Depend
         raise HTTPException(status_code=400, detail="SkillMatch ID is required")
 
     db_session = Session(
-        sessionType=session_data.sessionType.value,        duration=session_data.duration,        sessionDate=session_data.sessionDate,        sessionId=session_data.sessionId,        skillmatch_1_id=session_data.skillmatch_1        )
+        duration=session_data.duration,        sessionId=session_data.sessionId,        sessionDate=session_data.sessionDate,        sessionType=session_data.sessionType.value,        skillmatch_1_id=session_data.skillmatch_1        )
 
     database.add(db_session)
     database.commit()
@@ -417,7 +404,7 @@ async def bulk_create_session(items: list[SessionCreate], database: Session = De
                 raise ValueError("SkillMatch ID is required")
 
             db_session = Session(
-                sessionType=item_data.sessionType.value,                duration=item_data.duration,                sessionDate=item_data.sessionDate,                sessionId=item_data.sessionId,                skillmatch_1_id=item_data.skillmatch_1            )
+                duration=item_data.duration,                sessionId=item_data.sessionId,                sessionDate=item_data.sessionDate,                sessionType=item_data.sessionType.value,                skillmatch_1_id=item_data.skillmatch_1            )
             database.add(db_session)
             database.flush()  # Get ID without committing
             created_items.append(db_session.id)
@@ -464,10 +451,10 @@ async def update_session(session_id: int, session_data: SessionCreate, database:
     if db_session is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    setattr(db_session, 'sessionType', session_data.sessionType.value)
     setattr(db_session, 'duration', session_data.duration)
-    setattr(db_session, 'sessionDate', session_data.sessionDate)
     setattr(db_session, 'sessionId', session_data.sessionId)
+    setattr(db_session, 'sessionDate', session_data.sessionDate)
+    setattr(db_session, 'sessionType', session_data.sessionType.value)
     if session_data.skillmatch_1 is not None:
         db_skillmatch_1 = database.query(SkillMatch).filter(SkillMatch.id == session_data.skillmatch_1).first()
         if not db_skillmatch_1:
@@ -588,7 +575,7 @@ async def create_review(review_data: ReviewCreate, database: Session = Depends(g
         raise HTTPException(status_code=400, detail="Session ID is required")
 
     db_review = Review(
-        comments=review_data.comments,        reviewId=review_data.reviewId,        rating=review_data.rating,        session_1_id=review_data.session_1        )
+        reviewId=review_data.reviewId,        rating=review_data.rating,        comments=review_data.comments,        session_1_id=review_data.session_1        )
 
     database.add(db_review)
     database.commit()
@@ -613,7 +600,7 @@ async def bulk_create_review(items: list[ReviewCreate], database: Session = Depe
                 raise ValueError("Session ID is required")
 
             db_review = Review(
-                comments=item_data.comments,                reviewId=item_data.reviewId,                rating=item_data.rating,                session_1_id=item_data.session_1            )
+                reviewId=item_data.reviewId,                rating=item_data.rating,                comments=item_data.comments,                session_1_id=item_data.session_1            )
             database.add(db_review)
             database.flush()  # Get ID without committing
             created_items.append(db_review.id)
@@ -660,9 +647,9 @@ async def update_review(review_id: int, review_data: ReviewCreate, database: Ses
     if db_review is None:
         raise HTTPException(status_code=404, detail="Review not found")
 
-    setattr(db_review, 'comments', review_data.comments)
     setattr(db_review, 'reviewId', review_data.reviewId)
     setattr(db_review, 'rating', review_data.rating)
+    setattr(db_review, 'comments', review_data.comments)
     if review_data.session_1 is not None:
         db_session_1 = database.query(Session).filter(Session.id == review_data.session_1).first()
         if not db_session_1:
@@ -728,18 +715,18 @@ def get_all_skillmatch(detailed: bool = False, database: Session = Depends(get_d
                 item_dict['user_3'] = None
 
             # Add many-to-many and one-to-many relationship objects (full details)
-            skillrequest_list = database.query(SkillRequest).filter(SkillRequest.skillmatch_2_id == skillmatch_item.id).all()
-            item_dict['skillrequest_1'] = []
-            for skillrequest_obj in skillrequest_list:
-                skillrequest_dict = skillrequest_obj.__dict__.copy()
-                skillrequest_dict.pop('_sa_instance_state', None)
-                item_dict['skillrequest_1'].append(skillrequest_dict)
             session_list = database.query(Session).filter(Session.skillmatch_1_id == skillmatch_item.id).all()
             item_dict['session'] = []
             for session_obj in session_list:
                 session_dict = session_obj.__dict__.copy()
                 session_dict.pop('_sa_instance_state', None)
                 item_dict['session'].append(session_dict)
+            skillrequest_list = database.query(SkillRequest).filter(SkillRequest.skillmatch_2_id == skillmatch_item.id).all()
+            item_dict['skillrequest_1'] = []
+            for skillrequest_obj in skillrequest_list:
+                skillrequest_dict = skillrequest_obj.__dict__.copy()
+                skillrequest_dict.pop('_sa_instance_state', None)
+                item_dict['skillrequest_1'].append(skillrequest_dict)
 
             result.append(item_dict)
         return result
@@ -772,11 +759,11 @@ def get_paginated_skillmatch(skip: int = 0, limit: int = 100, detailed: bool = F
 
     result = []
     for skillmatch_item in skillmatch_list:
-        skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == skillmatch_item.id).all()
         session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == skillmatch_item.id).all()
+        skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == skillmatch_item.id).all()
         item_data = {
             "skillmatch": skillmatch_item,
-            "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids],            "session_ids": [x[0] for x in session_ids]        }
+            "session_ids": [x[0] for x in session_ids],            "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids]        }
         result.append(item_data)
     return {
         "total": total,
@@ -804,11 +791,11 @@ async def get_skillmatch(skillmatch_id: int, database: Session = Depends(get_db)
     if db_skillmatch is None:
         raise HTTPException(status_code=404, detail="SkillMatch not found")
 
-    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
     session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == db_skillmatch.id).all()
+    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
     response_data = {
         "skillmatch": db_skillmatch,
-        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids],        "session_ids": [x[0] for x in session_ids]}
+        "session_ids": [x[0] for x in session_ids],        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids]}
     return response_data
 
 
@@ -830,24 +817,12 @@ async def create_skillmatch(skillmatch_data: SkillMatchCreate, database: Session
         raise HTTPException(status_code=400, detail="User ID is required")
 
     db_skillmatch = SkillMatch(
-        status=skillmatch_data.status.value,        matchId=skillmatch_data.matchId,        createdDate=skillmatch_data.createdDate,        startDate=skillmatch_data.startDate,        user_2_id=skillmatch_data.user_2,        user_3_id=skillmatch_data.user_3        )
+        startDate=skillmatch_data.startDate,        createdDate=skillmatch_data.createdDate,        status=skillmatch_data.status.value,        matchId=skillmatch_data.matchId,        user_2_id=skillmatch_data.user_2,        user_3_id=skillmatch_data.user_3        )
 
     database.add(db_skillmatch)
     database.commit()
     database.refresh(db_skillmatch)
 
-    if skillmatch_data.skillrequest_1:
-        # Validate that all SkillRequest IDs exist
-        for skillrequest_id in skillmatch_data.skillrequest_1:
-            db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
-            if not db_skillrequest:
-                raise HTTPException(status_code=400, detail=f"SkillRequest with id {skillrequest_id} not found")
-
-        # Update the related entities with the new foreign key
-        database.query(SkillRequest).filter(SkillRequest.id.in_(skillmatch_data.skillrequest_1)).update(
-            {SkillRequest.skillmatch_2_id: db_skillmatch.id}, synchronize_session=False
-        )
-        database.commit()
     if skillmatch_data.session:
         # Validate that all Session IDs exist
         for session_id in skillmatch_data.session:
@@ -860,14 +835,26 @@ async def create_skillmatch(skillmatch_data: SkillMatchCreate, database: Session
             {Session.skillmatch_1_id: db_skillmatch.id}, synchronize_session=False
         )
         database.commit()
+    if skillmatch_data.skillrequest_1:
+        # Validate that all SkillRequest IDs exist
+        for skillrequest_id in skillmatch_data.skillrequest_1:
+            db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
+            if not db_skillrequest:
+                raise HTTPException(status_code=400, detail=f"SkillRequest with id {skillrequest_id} not found")
+
+        # Update the related entities with the new foreign key
+        database.query(SkillRequest).filter(SkillRequest.id.in_(skillmatch_data.skillrequest_1)).update(
+            {SkillRequest.skillmatch_2_id: db_skillmatch.id}, synchronize_session=False
+        )
+        database.commit()
 
 
 
-    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
     session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == db_skillmatch.id).all()
+    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
     response_data = {
         "skillmatch": db_skillmatch,
-        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids],        "session_ids": [x[0] for x in session_ids]    }
+        "session_ids": [x[0] for x in session_ids],        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids]    }
     return response_data
 
 
@@ -886,7 +873,7 @@ async def bulk_create_skillmatch(items: list[SkillMatchCreate], database: Sessio
                 raise ValueError("User ID is required")
 
             db_skillmatch = SkillMatch(
-                status=item_data.status.value,                matchId=item_data.matchId,                createdDate=item_data.createdDate,                startDate=item_data.startDate,                user_2_id=item_data.user_2,                user_3_id=item_data.user_3            )
+                startDate=item_data.startDate,                createdDate=item_data.createdDate,                status=item_data.status.value,                matchId=item_data.matchId,                user_2_id=item_data.user_2,                user_3_id=item_data.user_3            )
             database.add(db_skillmatch)
             database.flush()  # Get ID without committing
             created_items.append(db_skillmatch.id)
@@ -933,10 +920,10 @@ async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreat
     if db_skillmatch is None:
         raise HTTPException(status_code=404, detail="SkillMatch not found")
 
+    setattr(db_skillmatch, 'startDate', skillmatch_data.startDate)
+    setattr(db_skillmatch, 'createdDate', skillmatch_data.createdDate)
     setattr(db_skillmatch, 'status', skillmatch_data.status.value)
     setattr(db_skillmatch, 'matchId', skillmatch_data.matchId)
-    setattr(db_skillmatch, 'createdDate', skillmatch_data.createdDate)
-    setattr(db_skillmatch, 'startDate', skillmatch_data.startDate)
     if skillmatch_data.user_2 is not None:
         db_user_2 = database.query(User).filter(User.id == skillmatch_data.user_2).first()
         if not db_user_2:
@@ -947,24 +934,6 @@ async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreat
         if not db_user_3:
             raise HTTPException(status_code=400, detail="User not found")
         setattr(db_skillmatch, 'user_3_id', skillmatch_data.user_3)
-    if skillmatch_data.skillrequest_1 is not None:
-        # Clear all existing relationships (set foreign key to NULL)
-        database.query(SkillRequest).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).update(
-            {SkillRequest.skillmatch_2_id: None}, synchronize_session=False
-        )
-
-        # Set new relationships if list is not empty
-        if skillmatch_data.skillrequest_1:
-            # Validate that all IDs exist
-            for skillrequest_id in skillmatch_data.skillrequest_1:
-                db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
-                if not db_skillrequest:
-                    raise HTTPException(status_code=400, detail=f"SkillRequest with id {skillrequest_id} not found")
-
-            # Update the related entities with the new foreign key
-            database.query(SkillRequest).filter(SkillRequest.id.in_(skillmatch_data.skillrequest_1)).update(
-                {SkillRequest.skillmatch_2_id: db_skillmatch.id}, synchronize_session=False
-            )
     if skillmatch_data.session is not None:
         # Clear all existing relationships (set foreign key to NULL)
         database.query(Session).filter(Session.skillmatch_1_id == db_skillmatch.id).update(
@@ -983,14 +952,32 @@ async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreat
             database.query(Session).filter(Session.id.in_(skillmatch_data.session)).update(
                 {Session.skillmatch_1_id: db_skillmatch.id}, synchronize_session=False
             )
+    if skillmatch_data.skillrequest_1 is not None:
+        # Clear all existing relationships (set foreign key to NULL)
+        database.query(SkillRequest).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).update(
+            {SkillRequest.skillmatch_2_id: None}, synchronize_session=False
+        )
+
+        # Set new relationships if list is not empty
+        if skillmatch_data.skillrequest_1:
+            # Validate that all IDs exist
+            for skillrequest_id in skillmatch_data.skillrequest_1:
+                db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
+                if not db_skillrequest:
+                    raise HTTPException(status_code=400, detail=f"SkillRequest with id {skillrequest_id} not found")
+
+            # Update the related entities with the new foreign key
+            database.query(SkillRequest).filter(SkillRequest.id.in_(skillmatch_data.skillrequest_1)).update(
+                {SkillRequest.skillmatch_2_id: db_skillmatch.id}, synchronize_session=False
+            )
     database.commit()
     database.refresh(db_skillmatch)
 
-    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
     session_ids = database.query(Session.id).filter(Session.skillmatch_1_id == db_skillmatch.id).all()
+    skillrequest_1_ids = database.query(SkillRequest.id).filter(SkillRequest.skillmatch_2_id == db_skillmatch.id).all()
     response_data = {
         "skillmatch": db_skillmatch,
-        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids],        "session_ids": [x[0] for x in session_ids]    }
+        "session_ids": [x[0] for x in session_ids],        "skillrequest_1_ids": [x[0] for x in skillrequest_1_ids]    }
     return response_data
 
 
@@ -1129,7 +1116,7 @@ async def create_skillrequest(skillrequest_data: SkillRequestCreate, database: S
         raise HTTPException(status_code=400, detail="User ID is required")
 
     db_skillrequest = SkillRequest(
-        requestId=skillrequest_data.requestId,        status=skillrequest_data.status.value,        createdDate=skillrequest_data.createdDate,        deadlineDate=skillrequest_data.deadlineDate,        skillmatch_2_id=skillrequest_data.skillmatch_2,        skill_1_id=skillrequest_data.skill_1,        user_1_id=skillrequest_data.user_1        )
+        deadlineDate=skillrequest_data.deadlineDate,        status=skillrequest_data.status.value,        requestId=skillrequest_data.requestId,        createdDate=skillrequest_data.createdDate,        skillmatch_2_id=skillrequest_data.skillmatch_2,        skill_1_id=skillrequest_data.skill_1,        user_1_id=skillrequest_data.user_1        )
 
     database.add(db_skillrequest)
     database.commit()
@@ -1156,7 +1143,7 @@ async def bulk_create_skillrequest(items: list[SkillRequestCreate], database: Se
                 raise ValueError("User ID is required")
 
             db_skillrequest = SkillRequest(
-                requestId=item_data.requestId,                status=item_data.status.value,                createdDate=item_data.createdDate,                deadlineDate=item_data.deadlineDate,                skillmatch_2_id=item_data.skillmatch_2,                skill_1_id=item_data.skill_1,                user_1_id=item_data.user_1            )
+                deadlineDate=item_data.deadlineDate,                status=item_data.status.value,                requestId=item_data.requestId,                createdDate=item_data.createdDate,                skillmatch_2_id=item_data.skillmatch_2,                skill_1_id=item_data.skill_1,                user_1_id=item_data.user_1            )
             database.add(db_skillrequest)
             database.flush()  # Get ID without committing
             created_items.append(db_skillrequest.id)
@@ -1203,10 +1190,10 @@ async def update_skillrequest(skillrequest_id: int, skillrequest_data: SkillRequ
     if db_skillrequest is None:
         raise HTTPException(status_code=404, detail="SkillRequest not found")
 
-    setattr(db_skillrequest, 'requestId', skillrequest_data.requestId)
-    setattr(db_skillrequest, 'status', skillrequest_data.status.value)
-    setattr(db_skillrequest, 'createdDate', skillrequest_data.createdDate)
     setattr(db_skillrequest, 'deadlineDate', skillrequest_data.deadlineDate)
+    setattr(db_skillrequest, 'status', skillrequest_data.status.value)
+    setattr(db_skillrequest, 'requestId', skillrequest_data.requestId)
+    setattr(db_skillrequest, 'createdDate', skillrequest_data.createdDate)
     if skillrequest_data.skillmatch_2 is not None:
         db_skillmatch_2 = database.query(SkillMatch).filter(SkillMatch.id == skillrequest_data.skillmatch_2).first()
         if not db_skillmatch_2:
@@ -1268,18 +1255,18 @@ def get_all_skill(detailed: bool = False, database: Session = Depends(get_db)) -
             # Add many-to-one relationships (foreign keys for lookup columns)
 
             # Add many-to-many and one-to-many relationship objects (full details)
-            userskill_list = database.query(UserSkill).filter(UserSkill.skill_id == skill_item.id).all()
-            item_dict['userskill_1'] = []
-            for userskill_obj in userskill_list:
-                userskill_dict = userskill_obj.__dict__.copy()
-                userskill_dict.pop('_sa_instance_state', None)
-                item_dict['userskill_1'].append(userskill_dict)
             skillrequest_list = database.query(SkillRequest).filter(SkillRequest.skill_1_id == skill_item.id).all()
             item_dict['skillrequest_2'] = []
             for skillrequest_obj in skillrequest_list:
                 skillrequest_dict = skillrequest_obj.__dict__.copy()
                 skillrequest_dict.pop('_sa_instance_state', None)
                 item_dict['skillrequest_2'].append(skillrequest_dict)
+            userskill_list = database.query(UserSkill).filter(UserSkill.skill_id == skill_item.id).all()
+            item_dict['userskill_1'] = []
+            for userskill_obj in userskill_list:
+                userskill_dict = userskill_obj.__dict__.copy()
+                userskill_dict.pop('_sa_instance_state', None)
+                item_dict['userskill_1'].append(userskill_dict)
 
             result.append(item_dict)
         return result
@@ -1312,11 +1299,11 @@ def get_paginated_skill(skip: int = 0, limit: int = 100, detailed: bool = False,
 
     result = []
     for skill_item in skill_list:
-        userskill_1_ids = database.query(UserSkill.id).filter(UserSkill.skill_id == skill_item.id).all()
         skillrequest_2_ids = database.query(SkillRequest.id).filter(SkillRequest.skill_1_id == skill_item.id).all()
+        userskill_1_ids = database.query(UserSkill.id).filter(UserSkill.skill_id == skill_item.id).all()
         item_data = {
             "skill": skill_item,
-            "userskill_1_ids": [x[0] for x in userskill_1_ids],            "skillrequest_2_ids": [x[0] for x in skillrequest_2_ids]        }
+            "skillrequest_2_ids": [x[0] for x in skillrequest_2_ids],            "userskill_1_ids": [x[0] for x in userskill_1_ids]        }
         result.append(item_data)
     return {
         "total": total,
@@ -1344,11 +1331,11 @@ async def get_skill(skill_id: int, database: Session = Depends(get_db)) -> Skill
     if db_skill is None:
         raise HTTPException(status_code=404, detail="Skill not found")
 
-    userskill_1_ids = database.query(UserSkill.id).filter(UserSkill.skill_id == db_skill.id).all()
     skillrequest_2_ids = database.query(SkillRequest.id).filter(SkillRequest.skill_1_id == db_skill.id).all()
+    userskill_1_ids = database.query(UserSkill.id).filter(UserSkill.skill_id == db_skill.id).all()
     response_data = {
         "skill": db_skill,
-        "userskill_1_ids": [x[0] for x in userskill_1_ids],        "skillrequest_2_ids": [x[0] for x in skillrequest_2_ids]}
+        "skillrequest_2_ids": [x[0] for x in skillrequest_2_ids],        "userskill_1_ids": [x[0] for x in userskill_1_ids]}
     return response_data
 
 
@@ -1358,24 +1345,12 @@ async def create_skill(skill_data: SkillCreate, database: Session = Depends(get_
 
 
     db_skill = Skill(
-        skillName=skill_data.skillName,        skillId=skill_data.skillId,        description=skill_data.description,        skillLevel=skill_data.skillLevel.value,        category=skill_data.category        )
+        skillLevel=skill_data.skillLevel.value,        estimatedDuration=skill_data.estimatedDuration,        category=skill_data.category,        skillName=skill_data.skillName,        description=skill_data.description,        skillId=skill_data.skillId        )
 
     database.add(db_skill)
     database.commit()
     database.refresh(db_skill)
 
-    if skill_data.userskill_1:
-        # Validate that all UserSkill IDs exist
-        for userskill_id in skill_data.userskill_1:
-            db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
-            if not db_userskill:
-                raise HTTPException(status_code=400, detail=f"UserSkill with id {userskill_id} not found")
-
-        # Update the related entities with the new foreign key
-        database.query(UserSkill).filter(UserSkill.id.in_(skill_data.userskill_1)).update(
-            {UserSkill.skill_id: db_skill.id}, synchronize_session=False
-        )
-        database.commit()
     if skill_data.skillrequest_2:
         # Validate that all SkillRequest IDs exist
         for skillrequest_id in skill_data.skillrequest_2:
@@ -1388,14 +1363,26 @@ async def create_skill(skill_data: SkillCreate, database: Session = Depends(get_
             {SkillRequest.skill_1_id: db_skill.id}, synchronize_session=False
         )
         database.commit()
+    if skill_data.userskill_1:
+        # Validate that all UserSkill IDs exist
+        for userskill_id in skill_data.userskill_1:
+            db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
+            if not db_userskill:
+                raise HTTPException(status_code=400, detail=f"UserSkill with id {userskill_id} not found")
+
+        # Update the related entities with the new foreign key
+        database.query(UserSkill).filter(UserSkill.id.in_(skill_data.userskill_1)).update(
+            {UserSkill.skill_id: db_skill.id}, synchronize_session=False
+        )
+        database.commit()
 
 
 
-    userskill_1_ids = database.query(UserSkill.id).filter(UserSkill.skill_id == db_skill.id).all()
     skillrequest_2_ids = database.query(SkillRequest.id).filter(SkillRequest.skill_1_id == db_skill.id).all()
+    userskill_1_ids = database.query(UserSkill.id).filter(UserSkill.skill_id == db_skill.id).all()
     response_data = {
         "skill": db_skill,
-        "userskill_1_ids": [x[0] for x in userskill_1_ids],        "skillrequest_2_ids": [x[0] for x in skillrequest_2_ids]    }
+        "skillrequest_2_ids": [x[0] for x in skillrequest_2_ids],        "userskill_1_ids": [x[0] for x in userskill_1_ids]    }
     return response_data
 
 
@@ -1410,7 +1397,7 @@ async def bulk_create_skill(items: list[SkillCreate], database: Session = Depend
             # Basic validation for each item
 
             db_skill = Skill(
-                skillName=item_data.skillName,                skillId=item_data.skillId,                description=item_data.description,                skillLevel=item_data.skillLevel.value,                category=item_data.category            )
+                skillLevel=item_data.skillLevel.value,                estimatedDuration=item_data.estimatedDuration,                category=item_data.category,                skillName=item_data.skillName,                description=item_data.description,                skillId=item_data.skillId            )
             database.add(db_skill)
             database.flush()  # Get ID without committing
             created_items.append(db_skill.id)
@@ -1457,29 +1444,12 @@ async def update_skill(skill_id: int, skill_data: SkillCreate, database: Session
     if db_skill is None:
         raise HTTPException(status_code=404, detail="Skill not found")
 
-    setattr(db_skill, 'skillName', skill_data.skillName)
-    setattr(db_skill, 'skillId', skill_data.skillId)
-    setattr(db_skill, 'description', skill_data.description)
     setattr(db_skill, 'skillLevel', skill_data.skillLevel.value)
+    setattr(db_skill, 'estimatedDuration', skill_data.estimatedDuration)
     setattr(db_skill, 'category', skill_data.category)
-    if skill_data.userskill_1 is not None:
-        # Clear all existing relationships (set foreign key to NULL)
-        database.query(UserSkill).filter(UserSkill.skill_id == db_skill.id).update(
-            {UserSkill.skill_id: None}, synchronize_session=False
-        )
-
-        # Set new relationships if list is not empty
-        if skill_data.userskill_1:
-            # Validate that all IDs exist
-            for userskill_id in skill_data.userskill_1:
-                db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
-                if not db_userskill:
-                    raise HTTPException(status_code=400, detail=f"UserSkill with id {userskill_id} not found")
-
-            # Update the related entities with the new foreign key
-            database.query(UserSkill).filter(UserSkill.id.in_(skill_data.userskill_1)).update(
-                {UserSkill.skill_id: db_skill.id}, synchronize_session=False
-            )
+    setattr(db_skill, 'skillName', skill_data.skillName)
+    setattr(db_skill, 'description', skill_data.description)
+    setattr(db_skill, 'skillId', skill_data.skillId)
     if skill_data.skillrequest_2 is not None:
         # Clear all existing relationships (set foreign key to NULL)
         database.query(SkillRequest).filter(SkillRequest.skill_1_id == db_skill.id).update(
@@ -1498,14 +1468,32 @@ async def update_skill(skill_id: int, skill_data: SkillCreate, database: Session
             database.query(SkillRequest).filter(SkillRequest.id.in_(skill_data.skillrequest_2)).update(
                 {SkillRequest.skill_1_id: db_skill.id}, synchronize_session=False
             )
+    if skill_data.userskill_1 is not None:
+        # Clear all existing relationships (set foreign key to NULL)
+        database.query(UserSkill).filter(UserSkill.skill_id == db_skill.id).update(
+            {UserSkill.skill_id: None}, synchronize_session=False
+        )
+
+        # Set new relationships if list is not empty
+        if skill_data.userskill_1:
+            # Validate that all IDs exist
+            for userskill_id in skill_data.userskill_1:
+                db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
+                if not db_userskill:
+                    raise HTTPException(status_code=400, detail=f"UserSkill with id {userskill_id} not found")
+
+            # Update the related entities with the new foreign key
+            database.query(UserSkill).filter(UserSkill.id.in_(skill_data.userskill_1)).update(
+                {UserSkill.skill_id: db_skill.id}, synchronize_session=False
+            )
     database.commit()
     database.refresh(db_skill)
 
-    userskill_1_ids = database.query(UserSkill.id).filter(UserSkill.skill_id == db_skill.id).all()
     skillrequest_2_ids = database.query(SkillRequest.id).filter(SkillRequest.skill_1_id == db_skill.id).all()
+    userskill_1_ids = database.query(UserSkill.id).filter(UserSkill.skill_id == db_skill.id).all()
     response_data = {
         "skill": db_skill,
-        "userskill_1_ids": [x[0] for x in userskill_1_ids],        "skillrequest_2_ids": [x[0] for x in skillrequest_2_ids]    }
+        "skillrequest_2_ids": [x[0] for x in skillrequest_2_ids],        "userskill_1_ids": [x[0] for x in userskill_1_ids]    }
     return response_data
 
 
@@ -1632,7 +1620,7 @@ async def create_userskill(userskill_data: UserSkillCreate, database: Session = 
         raise HTTPException(status_code=400, detail="User ID is required")
 
     db_userskill = UserSkill(
-        skillLevel=userskill_data.skillLevel.value,        certification=userskill_data.certification,        yearsOfExperience=userskill_data.yearsOfExperience,        skillId=userskill_data.skillId,        skill_id=userskill_data.skill,        user_id=userskill_data.user        )
+        certification=userskill_data.certification,        yearsOfExperience=userskill_data.yearsOfExperience,        skillLevel=userskill_data.skillLevel.value,        skillId=userskill_data.skillId,        skill_id=userskill_data.skill,        user_id=userskill_data.user        )
 
     database.add(db_userskill)
     database.commit()
@@ -1659,7 +1647,7 @@ async def bulk_create_userskill(items: list[UserSkillCreate], database: Session 
                 raise ValueError("User ID is required")
 
             db_userskill = UserSkill(
-                skillLevel=item_data.skillLevel.value,                certification=item_data.certification,                yearsOfExperience=item_data.yearsOfExperience,                skillId=item_data.skillId,                skill_id=item_data.skill,                user_id=item_data.user            )
+                certification=item_data.certification,                yearsOfExperience=item_data.yearsOfExperience,                skillLevel=item_data.skillLevel.value,                skillId=item_data.skillId,                skill_id=item_data.skill,                user_id=item_data.user            )
             database.add(db_userskill)
             database.flush()  # Get ID without committing
             created_items.append(db_userskill.id)
@@ -1706,9 +1694,9 @@ async def update_userskill(userskill_id: int, userskill_data: UserSkillCreate, d
     if db_userskill is None:
         raise HTTPException(status_code=404, detail="UserSkill not found")
 
-    setattr(db_userskill, 'skillLevel', userskill_data.skillLevel.value)
     setattr(db_userskill, 'certification', userskill_data.certification)
     setattr(db_userskill, 'yearsOfExperience', userskill_data.yearsOfExperience)
+    setattr(db_userskill, 'skillLevel', userskill_data.skillLevel.value)
     setattr(db_userskill, 'skillId', userskill_data.skillId)
     if userskill_data.skill is not None:
         db_skill = database.query(Skill).filter(Skill.id == userskill_data.skill).first()
@@ -1770,6 +1758,12 @@ def get_all_user(detailed: bool = False, database: Session = Depends(get_db)) ->
                 skillmatch_dict = skillmatch_obj.__dict__.copy()
                 skillmatch_dict.pop('_sa_instance_state', None)
                 item_dict['skillmatch'].append(skillmatch_dict)
+            userskill_list = database.query(UserSkill).filter(UserSkill.user_id == user_item.id).all()
+            item_dict['userskill'] = []
+            for userskill_obj in userskill_list:
+                userskill_dict = userskill_obj.__dict__.copy()
+                userskill_dict.pop('_sa_instance_state', None)
+                item_dict['userskill'].append(userskill_dict)
             skillrequest_list = database.query(SkillRequest).filter(SkillRequest.user_1_id == user_item.id).all()
             item_dict['skillrequest'] = []
             for skillrequest_obj in skillrequest_list:
@@ -1782,12 +1776,6 @@ def get_all_user(detailed: bool = False, database: Session = Depends(get_db)) ->
                 skillmatch_dict = skillmatch_obj.__dict__.copy()
                 skillmatch_dict.pop('_sa_instance_state', None)
                 item_dict['skillmatch_3'].append(skillmatch_dict)
-            userskill_list = database.query(UserSkill).filter(UserSkill.user_id == user_item.id).all()
-            item_dict['userskill'] = []
-            for userskill_obj in userskill_list:
-                userskill_dict = userskill_obj.__dict__.copy()
-                userskill_dict.pop('_sa_instance_state', None)
-                item_dict['userskill'].append(userskill_dict)
 
             result.append(item_dict)
         return result
@@ -1821,12 +1809,12 @@ def get_paginated_user(skip: int = 0, limit: int = 100, detailed: bool = False, 
     result = []
     for user_item in user_list:
         skillmatch_ids = database.query(SkillMatch.id).filter(SkillMatch.user_2_id == user_item.id).all()
+        userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == user_item.id).all()
         skillrequest_ids = database.query(SkillRequest.id).filter(SkillRequest.user_1_id == user_item.id).all()
         skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == user_item.id).all()
-        userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == user_item.id).all()
         item_data = {
             "user": user_item,
-            "skillmatch_ids": [x[0] for x in skillmatch_ids],            "skillrequest_ids": [x[0] for x in skillrequest_ids],            "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],            "userskill_ids": [x[0] for x in userskill_ids]        }
+            "skillmatch_ids": [x[0] for x in skillmatch_ids],            "userskill_ids": [x[0] for x in userskill_ids],            "skillrequest_ids": [x[0] for x in skillrequest_ids],            "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids]        }
         result.append(item_data)
     return {
         "total": total,
@@ -1855,12 +1843,12 @@ async def get_user(user_id: int, database: Session = Depends(get_db)) -> User:
         raise HTTPException(status_code=404, detail="User not found")
 
     skillmatch_ids = database.query(SkillMatch.id).filter(SkillMatch.user_2_id == db_user.id).all()
+    userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == db_user.id).all()
     skillrequest_ids = database.query(SkillRequest.id).filter(SkillRequest.user_1_id == db_user.id).all()
     skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == db_user.id).all()
-    userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == db_user.id).all()
     response_data = {
         "user": db_user,
-        "skillmatch_ids": [x[0] for x in skillmatch_ids],        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],        "userskill_ids": [x[0] for x in userskill_ids]}
+        "skillmatch_ids": [x[0] for x in skillmatch_ids],        "userskill_ids": [x[0] for x in userskill_ids],        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids]}
     return response_data
 
 
@@ -1870,7 +1858,7 @@ async def create_user(user_data: UserCreate, database: Session = Depends(get_db)
 
 
     db_user = User(
-        userId=user_data.userId,        userName=user_data.userName,        emailId=user_data.emailId        )
+        userId=user_data.userId,        emailId=user_data.emailId,        userName=user_data.userName        )
 
     database.add(db_user)
     database.commit()
@@ -1886,6 +1874,18 @@ async def create_user(user_data: UserCreate, database: Session = Depends(get_db)
         # Update the related entities with the new foreign key
         database.query(SkillMatch).filter(SkillMatch.id.in_(user_data.skillmatch)).update(
             {SkillMatch.user_2_id: db_user.id}, synchronize_session=False
+        )
+        database.commit()
+    if user_data.userskill:
+        # Validate that all UserSkill IDs exist
+        for userskill_id in user_data.userskill:
+            db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
+            if not db_userskill:
+                raise HTTPException(status_code=400, detail=f"UserSkill with id {userskill_id} not found")
+
+        # Update the related entities with the new foreign key
+        database.query(UserSkill).filter(UserSkill.id.in_(user_data.userskill)).update(
+            {UserSkill.user_id: db_user.id}, synchronize_session=False
         )
         database.commit()
     if user_data.skillrequest:
@@ -1912,28 +1912,16 @@ async def create_user(user_data: UserCreate, database: Session = Depends(get_db)
             {SkillMatch.user_3_id: db_user.id}, synchronize_session=False
         )
         database.commit()
-    if user_data.userskill:
-        # Validate that all UserSkill IDs exist
-        for userskill_id in user_data.userskill:
-            db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
-            if not db_userskill:
-                raise HTTPException(status_code=400, detail=f"UserSkill with id {userskill_id} not found")
-
-        # Update the related entities with the new foreign key
-        database.query(UserSkill).filter(UserSkill.id.in_(user_data.userskill)).update(
-            {UserSkill.user_id: db_user.id}, synchronize_session=False
-        )
-        database.commit()
 
 
 
     skillmatch_ids = database.query(SkillMatch.id).filter(SkillMatch.user_2_id == db_user.id).all()
+    userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == db_user.id).all()
     skillrequest_ids = database.query(SkillRequest.id).filter(SkillRequest.user_1_id == db_user.id).all()
     skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == db_user.id).all()
-    userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == db_user.id).all()
     response_data = {
         "user": db_user,
-        "skillmatch_ids": [x[0] for x in skillmatch_ids],        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],        "userskill_ids": [x[0] for x in userskill_ids]    }
+        "skillmatch_ids": [x[0] for x in skillmatch_ids],        "userskill_ids": [x[0] for x in userskill_ids],        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids]    }
     return response_data
 
 
@@ -1948,7 +1936,7 @@ async def bulk_create_user(items: list[UserCreate], database: Session = Depends(
             # Basic validation for each item
 
             db_user = User(
-                userId=item_data.userId,                userName=item_data.userName,                emailId=item_data.emailId            )
+                userId=item_data.userId,                emailId=item_data.emailId,                userName=item_data.userName            )
             database.add(db_user)
             database.flush()  # Get ID without committing
             created_items.append(db_user.id)
@@ -1996,8 +1984,8 @@ async def update_user(user_id: int, user_data: UserCreate, database: Session = D
         raise HTTPException(status_code=404, detail="User not found")
 
     setattr(db_user, 'userId', user_data.userId)
-    setattr(db_user, 'userName', user_data.userName)
     setattr(db_user, 'emailId', user_data.emailId)
+    setattr(db_user, 'userName', user_data.userName)
     if user_data.skillmatch is not None:
         # Clear all existing relationships (set foreign key to NULL)
         database.query(SkillMatch).filter(SkillMatch.user_2_id == db_user.id).update(
@@ -2015,6 +2003,24 @@ async def update_user(user_id: int, user_data: UserCreate, database: Session = D
             # Update the related entities with the new foreign key
             database.query(SkillMatch).filter(SkillMatch.id.in_(user_data.skillmatch)).update(
                 {SkillMatch.user_2_id: db_user.id}, synchronize_session=False
+            )
+    if user_data.userskill is not None:
+        # Clear all existing relationships (set foreign key to NULL)
+        database.query(UserSkill).filter(UserSkill.user_id == db_user.id).update(
+            {UserSkill.user_id: None}, synchronize_session=False
+        )
+
+        # Set new relationships if list is not empty
+        if user_data.userskill:
+            # Validate that all IDs exist
+            for userskill_id in user_data.userskill:
+                db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
+                if not db_userskill:
+                    raise HTTPException(status_code=400, detail=f"UserSkill with id {userskill_id} not found")
+
+            # Update the related entities with the new foreign key
+            database.query(UserSkill).filter(UserSkill.id.in_(user_data.userskill)).update(
+                {UserSkill.user_id: db_user.id}, synchronize_session=False
             )
     if user_data.skillrequest is not None:
         # Clear all existing relationships (set foreign key to NULL)
@@ -2052,34 +2058,16 @@ async def update_user(user_id: int, user_data: UserCreate, database: Session = D
             database.query(SkillMatch).filter(SkillMatch.id.in_(user_data.skillmatch_3)).update(
                 {SkillMatch.user_3_id: db_user.id}, synchronize_session=False
             )
-    if user_data.userskill is not None:
-        # Clear all existing relationships (set foreign key to NULL)
-        database.query(UserSkill).filter(UserSkill.user_id == db_user.id).update(
-            {UserSkill.user_id: None}, synchronize_session=False
-        )
-
-        # Set new relationships if list is not empty
-        if user_data.userskill:
-            # Validate that all IDs exist
-            for userskill_id in user_data.userskill:
-                db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
-                if not db_userskill:
-                    raise HTTPException(status_code=400, detail=f"UserSkill with id {userskill_id} not found")
-
-            # Update the related entities with the new foreign key
-            database.query(UserSkill).filter(UserSkill.id.in_(user_data.userskill)).update(
-                {UserSkill.user_id: db_user.id}, synchronize_session=False
-            )
     database.commit()
     database.refresh(db_user)
 
     skillmatch_ids = database.query(SkillMatch.id).filter(SkillMatch.user_2_id == db_user.id).all()
+    userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == db_user.id).all()
     skillrequest_ids = database.query(SkillRequest.id).filter(SkillRequest.user_1_id == db_user.id).all()
     skillmatch_3_ids = database.query(SkillMatch.id).filter(SkillMatch.user_3_id == db_user.id).all()
-    userskill_ids = database.query(UserSkill.id).filter(UserSkill.user_id == db_user.id).all()
     response_data = {
         "user": db_user,
-        "skillmatch_ids": [x[0] for x in skillmatch_ids],        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids],        "userskill_ids": [x[0] for x in userskill_ids]    }
+        "skillmatch_ids": [x[0] for x in skillmatch_ids],        "userskill_ids": [x[0] for x in userskill_ids],        "skillrequest_ids": [x[0] for x in skillrequest_ids],        "skillmatch_3_ids": [x[0] for x in skillmatch_3_ids]    }
     return response_data
 
 
