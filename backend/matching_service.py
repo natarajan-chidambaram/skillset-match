@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from datetime import date
+import uuid
 
 # Import your BESSER-generated models — adjust names if different
-from sql_alchemy import SkillRequest, SkillMatch, UserSkill, Session as SessionModel, Review
+from sql_alchemy import SkillRequest, SkillMatch, UserSkill, Session as SessionModel, Review, Skill
 
 router = APIRouter()
 
@@ -40,6 +41,7 @@ def run_matching(database: Session = Depends(get_db)):
                 continue
 
             match = SkillMatch(
+                matchId=str(uuid.uuid4()),
                 status="PENDING",
                 createdDate=date.today(),
                 startDate=date.today(),
@@ -52,9 +54,13 @@ def run_matching(database: Session = Depends(get_db)):
             request.skillmatch_2_id = match.id
             request.status = "MATCHED"
 
+            skill = database.query(Skill).filter(Skill.id == request.skill_1_id).first()
+
             session = SessionModel(
                 sessionDate=date.today(),
-                skillmatch_1_id=match.id
+                skillmatch_1_id=match.id,
+                sessionType="ONLINE",
+                duration=skill.estimatedDuration if skill else 0
             )
             database.add(session)
             database.flush()
