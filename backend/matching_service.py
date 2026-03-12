@@ -12,8 +12,10 @@ def get_db(): # added to avoid circular import issues.
     db = SessionLocal()
     try:
         yield db
-    except Exception:
+    except Exception as e:
         db.rollback()
+        print(f"Database session rollback due to exception: {e}")
+        raise
     finally:
         db.close()
 
