@@ -94,7 +94,7 @@ def complete_session(
     )
     database.add(review)
 
-    match = database.query(SkillMatch).filter(SkillMatch.matchId == session.skillmatch).first()
+    match = database.query(SkillMatch).filter(SkillMatch.id == session.skillmatch_1_id).first()
     if match:
         match.status = "COMPLETED"
 
