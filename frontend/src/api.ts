@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:8000";
+const API_BASE = "https://skillset-match-4.onrender.com/";
+// const API_BASE = "http://localhost:8000";
 
 export const fetchUsers = () =>
   fetch(`${API_BASE}/user/`).then(r => r.json());
