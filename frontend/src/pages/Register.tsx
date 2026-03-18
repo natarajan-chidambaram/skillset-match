@@ -56,8 +56,8 @@ const Register: React.FC = () => {
             backendUrl={API_BASE}
             onSuccess={() => fetchUsers().then(setUsers)}
             parameters={[
-              { name: "name", type: "string", required: true },
-              { name: "userId", type: "string", required: true },
+              { name: "userName", type: "string", required: true },
+              { name: "userId", type: "number", required: true },
               { name: "emailId", type: "string", required: true }
             ]}
           />
@@ -96,8 +96,8 @@ const Register: React.FC = () => {
             isClassMethod={true}
             backendUrl={API_BASE}
             parameters={[
-              { name: "user_1", type: "string", required: true, inputKind: "lookup", entity: "user", lookupField: "userId" },
-              { name: "skill_1", type: "string", required: true, inputKind: "lookup", entity: "skill", lookupField: "name" },
+              { name: "user", type: "number", required: true, inputKind: "lookup", entity: "user", lookupField: "userId" },
+              { name: "skill", type: "number", required: true, inputKind: "lookup", entity: "skill", lookupField: "skillId" },
               { name: "skillLevel", type: "string", required: true, inputKind: "enum", options: ["NOVICE","COMPETENT","PROFICIENT","EXPERT","AUTHORITY"] },
               { name: "yearsOfExperience", type: "float", required: true },
               { name: "certification", type: "boolean", required: true }
