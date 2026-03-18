@@ -94,7 +94,6 @@ class UserSkillCreate(BaseModel):
     certification: bool
     yearsOfExperience: int
     skillLevel: UserSkillLevel
-    skillId: int
     skill: int  # N:1 Relationship (mandatory)
     user: int  # N:1 Relationship (mandatory)
 

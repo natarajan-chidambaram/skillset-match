@@ -100,7 +100,6 @@ class Skill(Base):
 class UserSkill(Base):
     __tablename__ = "userskill"
     id: Mapped[int] = mapped_column(primary_key=True)
-    skillId: Mapped[int] = mapped_column(Integer)
     skillLevel: Mapped[UserSkillLevel] = mapped_column(Enum(UserSkillLevel))
     yearsOfExperience: Mapped[int] = mapped_column(Integer)
     certification: Mapped[bool] = mapped_column(Boolean)
