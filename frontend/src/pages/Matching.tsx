@@ -42,8 +42,8 @@ const Matching: React.FC = () => {
             isClassMethod={true}
             backendUrl={API_BASE}
             parameters={[
-              { name: "user_1", type: "string", required: true, inputKind: "lookup", entity: "user", lookupField: "userId" },
-              { name: "skill_1", type: "string", required: true, inputKind: "lookup", entity: "skill", lookupField: "name" },
+              { name: "user_1", type: "string", required: true, inputKind: "lookup", entity: "user", lookupField: "userName" },
+              { name: "skill_1", type: "string", required: true, inputKind: "lookup", entity: "skill", lookupField: "skillName" },
               { name: "deadlineDate", type: "date", required: true },
               { name: "createdDate", type: "date", required: true },
               { name: "status", type: "string", required: true, inputKind: "enum", options: ["OPEN"] }
