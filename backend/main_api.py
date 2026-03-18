@@ -12,6 +12,14 @@ from pydantic_classes import *
 from sql_alchemy import *
 from matching_service import router as matching_router
 
+from pydantic import BaseModel
+from typing import TypeVar, Generic, Type
+
+T = TypeVar("T")
+
+class ParamsWrapper(BaseModel, Generic[T]):
+    params: T
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -1867,8 +1875,9 @@ async def get_user(user_id: int, database: Session = Depends(get_db)) -> User:
 
 
 @app.post("/user/", response_model=None, tags=["User"])
-async def create_user(user_data: UserCreate = Body(embed=True), database: Session = Depends(get_db)) -> User:
+async def create_user(body: ParamsWrapper[UserCreate], database: Session = Depends(get_db)) -> User:
 
+    user_data = body.params
 
     db_user = User(
         userId=user_data.userId,        emailId=user_data.emailId,        userName=user_data.userName        )
