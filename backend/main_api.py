@@ -1633,7 +1633,7 @@ async def create_userskill(userskill_data: UserSkillCreate = Body(alias="params"
         raise HTTPException(status_code=400, detail="User ID is required")
 
     db_userskill = UserSkill(
-        certification=userskill_data.certification,        yearsOfExperience=userskill_data.yearsOfExperience,        skillLevel=userskill_data.skillLevel.value,        skillId=userskill_data.skillId,        skill_id=userskill_data.skill,        user_id=userskill_data.user        )
+        certification=userskill_data.certification,        yearsOfExperience=userskill_data.yearsOfExperience,        skillLevel=userskill_data.skillLevel.value,        skill_id=userskill_data.skill,        user_id=userskill_data.user        )
 
     database.add(db_userskill)
     database.commit()
