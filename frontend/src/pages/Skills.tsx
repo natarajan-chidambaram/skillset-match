@@ -1,7 +1,7 @@
 import React from "react";
 import { MethodButton } from "../components/MethodButton";
 
-const API_BASE = "https://skillset-match-3.onrender.com/";
+const API_BASE = "https://skillset-match-3.onrender.com";
 // const API_BASE = "http://localhost:8000";
 
 const Skills: React.FC = () => {

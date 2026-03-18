@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { MethodButton } from "../components/MethodButton";
 import { fetchUsers, fetchSkills } from "../api";
 
-const API_BASE = "https://skillset-match-3.onrender.com/";
+const API_BASE = "https://skillset-match-3.onrender.com";
 // const API_BASE = "http://localhost:8000";
 
 const Register: React.FC = () => {
