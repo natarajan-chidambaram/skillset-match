@@ -1867,7 +1867,7 @@ async def get_user(user_id: int, database: Session = Depends(get_db)) -> User:
 
 
 @app.post("/user/", response_model=None, tags=["User"])
-async def create_user(user_data: UserCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> User:
+async def create_user(user_data: UserCreate = Body(embed=True), database: Session = Depends(get_db)) -> User:
 
 
     db_user = User(
