@@ -99,7 +99,7 @@ const Register: React.FC = () => {
               { name: "user", type: "number", required: true, inputKind: "lookup", entity: "user", lookupField: "userId" },
               { name: "skill", type: "number", required: true, inputKind: "lookup", entity: "skill", lookupField: "skillId" },
               { name: "skillLevel", type: "string", required: true, inputKind: "enum", options: ["NOVICE","COMPETENT","PROFICIENT","EXPERT","AUTHORITY"] },
-              { name: "yearsOfExperience", type: "float", required: true },
+              { name: "yearsOfExperience", type: "number", required: true },
               { name: "certification", type: "boolean", required: true }
             ]}
           />
