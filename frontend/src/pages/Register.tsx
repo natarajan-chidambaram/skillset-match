@@ -96,8 +96,8 @@ const Register: React.FC = () => {
             isClassMethod={true}
             backendUrl={API_BASE}
             parameters={[
-              { name: "user", type: "number", required: true, inputKind: "lookup", entity: "user", lookupField: "userId" },
-              { name: "skill", type: "number", required: true, inputKind: "lookup", entity: "skill", lookupField: "skillId" },
+              { name: "user", type: "number", required: true, inputKind: "lookup", entity: "user", lookupField: "userName" },
+              { name: "skill", type: "number", required: true, inputKind: "lookup", entity: "skill", lookupField: "skillName" },
               { name: "skillLevel", type: "string", required: true, inputKind: "enum", options: ["NOVICE","COMPETENT","PROFICIENT","EXPERT","AUTHORITY"] },
               { name: "yearsOfExperience", type: "number", required: true },
               { name: "certification", type: "boolean", required: true }
