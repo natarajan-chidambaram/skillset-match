@@ -12,14 +12,6 @@ from pydantic_classes import *
 from sql_alchemy import *
 from matching_service import router as matching_router
 
-from pydantic import BaseModel
-from typing import TypeVar, Generic, Type
-
-T = TypeVar("T")
-
-class ParamsWrapper(BaseModel, Generic[T]):
-    params: T
-
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -390,7 +382,7 @@ async def get_session(session_id: int, database: Session = Depends(get_db)) -> S
 
 
 @app.post("/session/", response_model=None, tags=["Session"])
-async def create_session(session_data: SessionCreate, database: Session = Depends(get_db)) -> Session:
+async def create_session(session_data: SessionCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Session:
 
     if session_data.skillmatch_1 is not None:
         db_skillmatch_1 = database.query(SkillMatch).filter(SkillMatch.id == session_data.skillmatch_1).first()
@@ -467,7 +459,7 @@ async def bulk_delete_session(ids: list[int], database: Session = Depends(get_db
     }
 
 @app.put("/session/{session_id}/", response_model=None, tags=["Session"])
-async def update_session(session_id: int, session_data: SessionCreate, database: Session = Depends(get_db)) -> Session:
+async def update_session(session_id: int, session_data: SessionCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Session:
     db_session = database.query(Session).filter(Session.id == session_id).first()
     if db_session is None:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -586,7 +578,7 @@ async def get_review(review_id: int, database: Session = Depends(get_db)) -> Rev
 
 
 @app.post("/review/", response_model=None, tags=["Review"])
-async def create_review(review_data: ReviewCreate, database: Session = Depends(get_db)) -> Review:
+async def create_review(review_data: ReviewCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Review:
 
     if review_data.session_1 is not None:
         db_session_1 = database.query(Session).filter(Session.id == review_data.session_1).first()
@@ -663,7 +655,7 @@ async def bulk_delete_review(ids: list[int], database: Session = Depends(get_db)
     }
 
 @app.put("/review/{review_id}/", response_model=None, tags=["Review"])
-async def update_review(review_id: int, review_data: ReviewCreate, database: Session = Depends(get_db)) -> Review:
+async def update_review(review_id: int, review_data: ReviewCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Review:
     db_review = database.query(Review).filter(Review.id == review_id).first()
     if db_review is None:
         raise HTTPException(status_code=404, detail="Review not found")
@@ -822,7 +814,7 @@ async def get_skillmatch(skillmatch_id: int, database: Session = Depends(get_db)
 
 
 @app.post("/skillmatch/", response_model=None, tags=["SkillMatch"])
-async def create_skillmatch(skillmatch_data: SkillMatchCreate, database: Session = Depends(get_db)) -> SkillMatch:
+async def create_skillmatch(skillmatch_data: SkillMatchCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> SkillMatch:
 
     if skillmatch_data.user_2 is not None:
         db_user_2 = database.query(User).filter(User.id == skillmatch_data.user_2).first()
@@ -936,7 +928,7 @@ async def bulk_delete_skillmatch(ids: list[int], database: Session = Depends(get
     }
 
 @app.put("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
-async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreate, database: Session = Depends(get_db)) -> SkillMatch:
+async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> SkillMatch:
     db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
     if db_skillmatch is None:
         raise HTTPException(status_code=404, detail="SkillMatch not found")
@@ -1117,7 +1109,7 @@ async def get_skillrequest(skillrequest_id: int, database: Session = Depends(get
 
 
 @app.post("/skillrequest/", response_model=None, tags=["SkillRequest"])
-async def create_skillrequest(skillrequest_data: SkillRequestCreate, database: Session = Depends(get_db)) -> SkillRequest:
+async def create_skillrequest(skillrequest_data: SkillRequestCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> SkillRequest:
 
     if skillrequest_data.skillmatch_2 :
         db_skillmatch_2 = database.query(SkillMatch).filter(SkillMatch.id == skillrequest_data.skillmatch_2).first()
@@ -1206,7 +1198,7 @@ async def bulk_delete_skillrequest(ids: list[int], database: Session = Depends(g
     }
 
 @app.put("/skillrequest/{skillrequest_id}/", response_model=None, tags=["SkillRequest"])
-async def update_skillrequest(skillrequest_id: int, skillrequest_data: SkillRequestCreate, database: Session = Depends(get_db)) -> SkillRequest:
+async def update_skillrequest(skillrequest_id: int, skillrequest_data: SkillRequestCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> SkillRequest:
     db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
     if db_skillrequest is None:
         raise HTTPException(status_code=404, detail="SkillRequest not found")
@@ -1362,7 +1354,7 @@ async def get_skill(skill_id: int, database: Session = Depends(get_db)) -> Skill
 
 
 @app.post("/skill/", response_model=None, tags=["Skill"])
-async def create_skill(skill_data: SkillCreate, database: Session = Depends(get_db)) -> Skill:
+async def create_skill(skill_data: SkillCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Skill:
 
 
     db_skill = Skill(
@@ -1460,7 +1452,7 @@ async def bulk_delete_skill(ids: list[int], database: Session = Depends(get_db))
     }
 
 @app.put("/skill/{skill_id}/", response_model=None, tags=["Skill"])
-async def update_skill(skill_id: int, skill_data: SkillCreate, database: Session = Depends(get_db)) -> Skill:
+async def update_skill(skill_id: int, skill_data: SkillCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Skill:
     db_skill = database.query(Skill).filter(Skill.id == skill_id).first()
     if db_skill is None:
         raise HTTPException(status_code=404, detail="Skill not found")
@@ -1625,7 +1617,7 @@ async def get_userskill(userskill_id: int, database: Session = Depends(get_db)) 
 
 
 @app.post("/userskill/", response_model=None, tags=["UserSkill"])
-async def create_userskill(userskill_data: UserSkillCreate, database: Session = Depends(get_db)) -> UserSkill:
+async def create_userskill(userskill_data: UserSkillCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> UserSkill:
 
     if userskill_data.skill is not None:
         db_skill = database.query(Skill).filter(Skill.id == userskill_data.skill).first()
@@ -1710,7 +1702,7 @@ async def bulk_delete_userskill(ids: list[int], database: Session = Depends(get_
     }
 
 @app.put("/userskill/{userskill_id}/", response_model=None, tags=["UserSkill"])
-async def update_userskill(userskill_id: int, userskill_data: UserSkillCreate, database: Session = Depends(get_db)) -> UserSkill:
+async def update_userskill(userskill_id: int, userskill_data: UserSkillCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> UserSkill:
     db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
     if db_userskill is None:
         raise HTTPException(status_code=404, detail="UserSkill not found")
@@ -1999,7 +1991,7 @@ async def bulk_delete_user(ids: list[int], database: Session = Depends(get_db)) 
     }
 
 @app.put("/user/{user_id}/", response_model=None, tags=["User"])
-async def update_user(user_id: int, user_data: UserCreate, database: Session = Depends(get_db)) -> User:
+async def update_user(user_id: int, user_data: UserCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> User:
     db_user = database.query(User).filter(User.id == user_id).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
