@@ -62,7 +62,7 @@ const Sessions: React.FC = () => {
                   className="action-button-component"
                   style={btnStyle}
                   label="Submit review"
-                  endpoint="/sessionreview/"
+                  endpoint="/session/"
                   isClassMethod={true}
                   backendUrl={API_BASE}
                   parameters={[
