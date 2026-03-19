@@ -68,6 +68,39 @@ const Matching: React.FC = () => {
           />
         </div>
 
+        {/* Moderate Sessions Card */}
+        <div style={{ padding: "20px", background: "#e3f2fd", border: "2px dashed #1976d2", minHeight: "80px" }}>
+          <p style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "8px" }}>{"Moderate Sessions"}</p>
+          <p style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>
+            📝 Review pending matches and approve or reject them
+          </p>
+          <MethodButton
+            className="action-button-component"
+            style={btnStyle}
+            label="Moderate Sessions"
+            endpoint="/skillmatch/{id}"
+            isClassMethod={false}
+            backendUrl={API_BASE}
+            parameters={[
+              {
+                name: "id", type: "number", required: true,
+                inputKind: "lookup", entity: "skillmatch", lookupField: "id",
+                cascade: {
+                  fetchUrl: "/skillmatch/{value}",
+                  display: [
+                    { label: "Learner",        field: "skillmatch.user_2_id" },
+                    { label: "Teacher",       field: "skillmatch.user_3_id" },
+                    { label: "Current Status", field: "skillmatch.status" }
+                  ]
+                }
+              },
+              { name: "status", type: "string", required: true,
+                inputKind: "enum", options: ["PENDING", "ACTIVE", "REJECTED", "COMPLETED"] }
+            ]}
+          />
+        </div>
+
+
       </div>
     </div>
   );

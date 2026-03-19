@@ -11,6 +11,7 @@ export interface MethodParameter {
   entity?: string;
   lookupField?: string;
   options?: string[];
+  cascade?: { fetchUrl: string; display: { label: string; field: string }[] };
 }
 
 export interface MethodButtonProps {
@@ -101,6 +102,7 @@ export const MethodButton: React.FC<MethodButtonProps> = ({
     });
     return defaults;
   });
+  const [cascadeData, setCascadeData] = useState<Record<string, any>>({});
 
   // Access table context to get selected row
   const tableContext = useTableContext();
@@ -400,7 +402,15 @@ export const MethodButton: React.FC<MethodButtonProps> = ({
         <div>
           <select
             value={value === null || value === undefined ? "" : String(value)}
-            onChange={(e) => handleParamChange(param.name, e.target.value === "" ? "" : coerceLookupValue(e.target.value))}
+            // onChange={(e) => handleParamChange(param.name, e.target.value === "" ? "" : coerceLookupValue(e.target.value))}
+            onChange={e => {
+              const val = e.target.value ? coerceLookupValue(e.target.value) : undefined;
+              handleParamChange(param.name, val);
+              if (param.cascade && val) {
+                const url = `${backendUrl}${param.cascade.fetchUrl.replace("{value}", String(val))}`;
+                axios.get(url).then(r => setCascadeData(prev => ({ ...prev, [param.name]: r.data })));
+              }
+            }}
             required={param.required}
             style={{
               width: "100%",
@@ -429,6 +439,16 @@ export const MethodButton: React.FC<MethodButtonProps> = ({
           {options.length === 0 && (
             <div style={{ marginTop: "6px", fontSize: "12px", color: "#64748b" }}>
               No options available
+            </div>
+          )}
+          {param.cascade && cascadeData[param.name] && (
+            <div style={{ padding: 10, marginTop: 8, backgroundColor: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, fontSize: 14 }}>
+              {param.cascade.display.map(d => (
+                <div key={d.label} style={{ marginBottom: 4 }}>
+                  <strong>{d.label}:</strong>{" "}
+                  {d.field.split(".").reduce((o: any, k: string) => o?.[k], cascadeData[param.name]) ?? "—"}
+                </div>
+              ))}
             </div>
           )}
         </div>
