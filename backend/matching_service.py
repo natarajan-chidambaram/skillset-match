@@ -40,7 +40,7 @@ def run_matching(database: Session = Depends(get_db)):
                 continue
 
             match = SkillMatch(
-                matchId=int(date.today().strftime("%Y%m%d")) + len(matches_created),
+                # matchId=int(date.today().strftime("%Y%m%d")) + len(matches_created),
                 status="PENDING",
                 createdDate=date.today(),
                 startDate=date.today(),
@@ -66,7 +66,7 @@ def run_matching(database: Session = Depends(get_db)):
             database.flush()
 
             matches_created.append({
-                "matchId": match.id,
+                # "matchId": match.id,
                 "teacher": teacher.user_id,
                 "learner": request.user_1_id,
                 "skill": request.skill_1_id

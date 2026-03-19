@@ -69,7 +69,6 @@ class Review(Base):
 class SkillMatch(Base):
     __tablename__ = "skillmatch"
     id: Mapped[int] = mapped_column(primary_key=True)
-    matchId: Mapped[int] = mapped_column(Integer)
     createdDate: Mapped[dt_date] = mapped_column(Date)
     startDate: Mapped[dt_date] = mapped_column(Date)
     status: Mapped[SkillMatchStatus] = mapped_column(Enum(SkillMatchStatus))
@@ -79,7 +78,6 @@ class SkillMatch(Base):
 class SkillRequest(Base):
     __tablename__ = "skillrequest"
     id: Mapped[int] = mapped_column(primary_key=True)
-    requestId: Mapped[int] = mapped_column(Integer)
     createdDate: Mapped[dt_date] = mapped_column(Date)
     status: Mapped[SkillRequestStatus] = mapped_column(Enum(SkillRequestStatus))
     deadlineDate: Mapped[dt_date] = mapped_column(Date)

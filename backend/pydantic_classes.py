@@ -62,7 +62,6 @@ class SkillMatchCreate(BaseModel):
     startDate: date
     createdDate: date
     status: SkillMatchStatus
-    matchId: int
     user_2: int  # N:1 Relationship (mandatory)
     session: Optional[List[int]] = None  # 1:N Relationship
     skillrequest_1: Optional[List[int]] = None  # 1:N Relationship
@@ -72,7 +71,6 @@ class SkillMatchCreate(BaseModel):
 class SkillRequestCreate(BaseModel):
     deadlineDate: date
     status: SkillRequestStatus
-    requestId: int
     createdDate: date
     skillmatch_2: Optional[int] = None  # N:1 Relationship (optional)
     skill_1: int  # N:1 Relationship (mandatory)

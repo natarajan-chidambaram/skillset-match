@@ -830,7 +830,7 @@ async def create_skillmatch(skillmatch_data: SkillMatchCreate = Body(alias="para
         raise HTTPException(status_code=400, detail="User ID is required")
 
     db_skillmatch = SkillMatch(
-        startDate=skillmatch_data.startDate,        createdDate=skillmatch_data.createdDate,        status=skillmatch_data.status.value,        matchId=skillmatch_data.matchId,        user_2_id=skillmatch_data.user_2,        user_3_id=skillmatch_data.user_3        )
+        startDate=skillmatch_data.startDate,        createdDate=skillmatch_data.createdDate,        status=skillmatch_data.status.value,        user_2_id=skillmatch_data.user_2,        user_3_id=skillmatch_data.user_3        )
 
     database.add(db_skillmatch)
     database.commit()
@@ -886,7 +886,7 @@ async def bulk_create_skillmatch(items: list[SkillMatchCreate], database: Sessio
                 raise ValueError("User ID is required")
 
             db_skillmatch = SkillMatch(
-                startDate=item_data.startDate,                createdDate=item_data.createdDate,                status=item_data.status.value,                matchId=item_data.matchId,                user_2_id=item_data.user_2,                user_3_id=item_data.user_3            )
+                startDate=item_data.startDate,                createdDate=item_data.createdDate,                status=item_data.status.value,                user_2_id=item_data.user_2,                user_3_id=item_data.user_3            )
             database.add(db_skillmatch)
             database.flush()  # Get ID without committing
             created_items.append(db_skillmatch.id)
@@ -936,7 +936,6 @@ async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreat
     setattr(db_skillmatch, 'startDate', skillmatch_data.startDate)
     setattr(db_skillmatch, 'createdDate', skillmatch_data.createdDate)
     setattr(db_skillmatch, 'status', skillmatch_data.status.value)
-    setattr(db_skillmatch, 'matchId', skillmatch_data.matchId)
     if skillmatch_data.user_2 is not None:
         db_user_2 = database.query(User).filter(User.id == skillmatch_data.user_2).first()
         if not db_user_2:
@@ -1129,7 +1128,7 @@ async def create_skillrequest(skillrequest_data: SkillRequestCreate = Body(alias
         raise HTTPException(status_code=400, detail="User ID is required")
 
     db_skillrequest = SkillRequest(
-        deadlineDate=skillrequest_data.deadlineDate,        status=skillrequest_data.status.value,        requestId=skillrequest_data.requestId,        createdDate=skillrequest_data.createdDate,        skillmatch_2_id=skillrequest_data.skillmatch_2,        skill_1_id=skillrequest_data.skill_1,        user_1_id=skillrequest_data.user_1        )
+        deadlineDate=skillrequest_data.deadlineDate,        status=skillrequest_data.status.value,        createdDate=skillrequest_data.createdDate,        skillmatch_2_id=skillrequest_data.skillmatch_2,        skill_1_id=skillrequest_data.skill_1,        user_1_id=skillrequest_data.user_1        )
 
     database.add(db_skillrequest)
     database.commit()
@@ -1156,7 +1155,7 @@ async def bulk_create_skillrequest(items: list[SkillRequestCreate], database: Se
                 raise ValueError("User ID is required")
 
             db_skillrequest = SkillRequest(
-                deadlineDate=item_data.deadlineDate,                status=item_data.status.value,                requestId=item_data.requestId,                createdDate=item_data.createdDate,                skillmatch_2_id=item_data.skillmatch_2,                skill_1_id=item_data.skill_1,                user_1_id=item_data.user_1            )
+                deadlineDate=item_data.deadlineDate,                status=item_data.status.value,                createdDate=item_data.createdDate,                skillmatch_2_id=item_data.skillmatch_2,                skill_1_id=item_data.skill_1,                user_1_id=item_data.user_1            )
             database.add(db_skillrequest)
             database.flush()  # Get ID without committing
             created_items.append(db_skillrequest.id)
@@ -1205,7 +1204,6 @@ async def update_skillrequest(skillrequest_id: int, skillrequest_data: SkillRequ
 
     setattr(db_skillrequest, 'deadlineDate', skillrequest_data.deadlineDate)
     setattr(db_skillrequest, 'status', skillrequest_data.status.value)
-    setattr(db_skillrequest, 'requestId', skillrequest_data.requestId)
     setattr(db_skillrequest, 'createdDate', skillrequest_data.createdDate)
     if skillrequest_data.skillmatch_2 is not None:
         db_skillmatch_2 = database.query(SkillMatch).filter(SkillMatch.id == skillrequest_data.skillmatch_2).first()
@@ -1660,7 +1658,7 @@ async def bulk_create_userskill(items: list[UserSkillCreate], database: Session 
                 raise ValueError("User ID is required")
 
             db_userskill = UserSkill(
-                certification=item_data.certification,                yearsOfExperience=item_data.yearsOfExperience,                skillLevel=item_data.skillLevel.value,                skillId=item_data.skillId,                skill_id=item_data.skill,                user_id=item_data.user            )
+                certification=item_data.certification,                yearsOfExperience=item_data.yearsOfExperience,                skillLevel=item_data.skillLevel.value,                skill_id=item_data.skill,                user_id=item_data.user            )
             database.add(db_userskill)
             database.flush()  # Get ID without committing
             created_items.append(db_userskill.id)
@@ -1710,7 +1708,6 @@ async def update_userskill(userskill_id: int, userskill_data: UserSkillCreate  =
     setattr(db_userskill, 'certification', userskill_data.certification)
     setattr(db_userskill, 'yearsOfExperience', userskill_data.yearsOfExperience)
     setattr(db_userskill, 'skillLevel', userskill_data.skillLevel.value)
-    setattr(db_userskill, 'skillId', userskill_data.skillId)
     if userskill_data.skill is not None:
         db_skill = database.query(Skill).filter(Skill.id == userskill_data.skill).first()
         if not db_skill:
