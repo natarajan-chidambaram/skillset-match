@@ -88,7 +88,6 @@ def complete_session(
         raise HTTPException(status_code=404, detail="Session not found")
 
     review = Review(
-        reviewId=session.id,
         rating=rating,
         comments=comment,
         session_1_id=session.id

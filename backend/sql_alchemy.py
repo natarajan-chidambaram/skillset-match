@@ -61,7 +61,6 @@ class Session(Base):
 class Review(Base):
     __tablename__ = "review"
     id: Mapped[int] = mapped_column(primary_key=True)
-    reviewId: Mapped[int] = mapped_column(Integer)
     rating: Mapped[int] = mapped_column(Integer)
     comments: Mapped[str] = mapped_column(String(100))
     session_1_id: Mapped[int] = mapped_column(ForeignKey("session.id"), unique=True)

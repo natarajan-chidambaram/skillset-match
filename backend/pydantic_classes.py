@@ -52,7 +52,6 @@ class SessionCreate(BaseModel):
 
 
 class ReviewCreate(BaseModel):
-    reviewId: int
     rating: int
     comments: str
     session_1: int  # 1:1 Relationship (mandatory)

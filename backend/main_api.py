@@ -589,7 +589,7 @@ async def create_review(review_data: ReviewCreate = Body(alias="params", embed=T
         raise HTTPException(status_code=400, detail="Session ID is required")
 
     db_review = Review(
-        reviewId=review_data.reviewId,        rating=review_data.rating,        comments=review_data.comments,        session_1_id=review_data.session_1        )
+        rating=review_data.rating,        comments=review_data.comments,        session_1_id=review_data.session_1        )
 
     database.add(db_review)
     database.commit()
@@ -614,7 +614,7 @@ async def bulk_create_review(items: list[ReviewCreate], database: DBSession = De
                 raise ValueError("Session ID is required")
 
             db_review = Review(
-                reviewId=item_data.reviewId,                rating=item_data.rating,                comments=item_data.comments,                session_1_id=item_data.session_1            )
+                rating=item_data.rating,                comments=item_data.comments,                session_1_id=item_data.session_1            )
             database.add(db_review)
             database.flush()  # Get ID without committing
             created_items.append(db_review.id)
@@ -661,7 +661,6 @@ async def update_review(review_id: int, review_data: ReviewCreate  = Body(alias=
     if db_review is None:
         raise HTTPException(status_code=404, detail="Review not found")
 
-    setattr(db_review, 'reviewId', review_data.reviewId)
     setattr(db_review, 'rating', review_data.rating)
     setattr(db_review, 'comments', review_data.comments)
     if review_data.session_1 is not None:
