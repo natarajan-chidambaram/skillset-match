@@ -11,7 +11,7 @@ export interface MethodParameter {
   entity?: string;
   lookupField?: string;
   options?: string[];
-  cascade?: { fetchUrl: string; display: { label: string; field: string }[] };
+  cascade?: { fetchUrl: string; display: { label: string; field: string }[]; prefill?: { paramName: string; field: string }[];};
 }
 
 export interface MethodButtonProps {
@@ -419,7 +419,19 @@ export const MethodButton: React.FC<MethodButtonProps> = ({
               handleParamChange(param.name, val);
               if (param.cascade && val) {
                 const url = `${backendUrl}${param.cascade.fetchUrl.replace("{value}", String(val))}`;
-                axios.get(url).then(r => setCascadeData(prev => ({ ...prev, [param.name]: r.data })));
+                axios.get(url).then(r => {
+                  setCascadeData(prev => ({ ...prev, [param.name]: r.data }));
+
+                  // pre-populate other fields from fetched data
+                  if (param.cascade?.prefill) {
+                    param.cascade.prefill.forEach(pf => {
+                      const fetchedVal = pf.field.split(".").reduce((o: any, k: string) => o?.[k], r.data);
+                      if (fetchedVal !== undefined) {
+                        handleParamChange(pf.paramName, fetchedVal);
+                      }
+                    });
+                  }
+                });
               }
             }}
             required={param.required}

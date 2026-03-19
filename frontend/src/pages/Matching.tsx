@@ -91,6 +91,12 @@ const Matching: React.FC = () => {
                     { label: "Learner",        field: "skillmatch.user_2_id" },
                     { label: "Teacher",       field: "skillmatch.user_3_id" },
                     { label: "Current Status", field: "skillmatch.status" }
+                  ],
+                  prefill: [
+                    { paramName: "startDate",   field: "skillmatch.startDate" },
+                    { paramName: "createdDate", field: "skillmatch.createdDate" },
+                    { paramName: "user_2",      field: "skillmatch.user_2_id" },
+                    { paramName: "user_3",      field: "skillmatch.user_3_id" }
                   ]
                 }
               },
