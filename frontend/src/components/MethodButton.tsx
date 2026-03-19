@@ -267,12 +267,23 @@ export const MethodButton: React.FC<MethodButtonProps> = ({
         instanceSourceTableId,
       });
 
-      // Execute the method via POST request
-      const response = await axios.post(finalEndpoint, requestBody, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      // Added manually to replace {paramName} placeholders with actual values.
+      Object.keys(paramValues).forEach(key => {
+        finalEndpoint = finalEndpoint.replace(`{${key}}`, String(paramValues[key]));
       });
+
+      // Execute the method via POST request
+      // const response = await axios.post(finalEndpoint, requestBody, {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // });
+      
+      // replaced above with the following to support PUT when updating values with id.
+      const hasPlaceholderReplaced = endpointProp?.includes("{");
+      const response = hasPlaceholderReplaced
+        ? await axios.put(finalEndpoint, requestBody, { headers: { "Content-Type": "application/json" } })
+        : await axios.post(finalEndpoint, requestBody, { headers: { "Content-Type": "application/json" } });
 
       console.log(`[MethodButton] Method executed successfully:`, response.data);
       setResult(response.data);
