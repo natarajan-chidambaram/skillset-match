@@ -6,7 +6,8 @@ from fastapi import Depends, FastAPI, HTTPException, Request, status, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session as DBSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from pydantic_classes import *
 from sql_alchemy import *
@@ -215,7 +216,7 @@ def health_check():
 
 
 @app.get("/statistics", tags=["System"])
-def get_statistics(database: Session = Depends(get_db)):
+def get_statistics(database: DBSession = Depends(get_db)):
     """Get database statistics for all entities"""
     stats = {}
     stats["session_count"] = database.query(Session).count()
@@ -295,7 +296,7 @@ async def BAL_reduce(sequence:list, reduce_fn, aggregator) -> any:
 ############################################
 
 @app.get("/session/", response_model=None, tags=["Session"])
-def get_all_session(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+def get_all_session(detailed: bool = False, database: DBSession = Depends(get_db)) -> list:
     from sqlalchemy.orm import joinedload
 
     # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
@@ -337,14 +338,14 @@ def get_all_session(detailed: bool = False, database: Session = Depends(get_db))
 
 
 @app.get("/session/count/", response_model=None, tags=["Session"])
-def get_count_session(database: Session = Depends(get_db)) -> dict:
+def get_count_session(database: DBSession = Depends(get_db)) -> dict:
     """Get the total count of Session entities"""
     count = database.query(Session).count()
     return {"count": count}
 
 
 @app.get("/session/paginated/", response_model=None, tags=["Session"])
-def get_paginated_session(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+def get_paginated_session(skip: int = 0, limit: int = 100, detailed: bool = False, database: DBSession = Depends(get_db)) -> dict:
     """Get paginated list of Session entities"""
     total = database.query(Session).count()
     session_list = database.query(Session).offset(skip).limit(limit).all()
@@ -358,7 +359,7 @@ def get_paginated_session(skip: int = 0, limit: int = 100, detailed: bool = Fals
 
 @app.get("/session/search/", response_model=None, tags=["Session"])
 def search_session(
-    database: Session = Depends(get_db)
+    database: DBSession = Depends(get_db)
 ) -> list:
     """Search Session entities by attributes"""
     query = database.query(Session)
@@ -369,7 +370,7 @@ def search_session(
 
 
 @app.get("/session/{session_id}/", response_model=None, tags=["Session"])
-async def get_session(session_id: int, database: Session = Depends(get_db)) -> Session:
+async def get_session(session_id: int, database: DBSession = Depends(get_db)) -> Session:
     db_session = database.query(Session).filter(Session.id == session_id).first()
     if db_session is None:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -382,7 +383,7 @@ async def get_session(session_id: int, database: Session = Depends(get_db)) -> S
 
 
 @app.post("/session/", response_model=None, tags=["Session"])
-async def create_session(session_data: SessionCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Session:
+async def create_session(session_data: SessionCreate = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> Session:
 
     if session_data.skillmatch_1 is not None:
         db_skillmatch_1 = database.query(SkillMatch).filter(SkillMatch.id == session_data.skillmatch_1).first()
@@ -405,7 +406,7 @@ async def create_session(session_data: SessionCreate = Body(alias="params", embe
 
 
 @app.post("/session/bulk/", response_model=None, tags=["Session"])
-async def bulk_create_session(items: list[SessionCreate], database: Session = Depends(get_db)) -> dict:
+async def bulk_create_session(items: list[SessionCreate], database: DBSession = Depends(get_db)) -> dict:
     """Create multiple Session entities at once"""
     created_items = []
     errors = []
@@ -437,7 +438,7 @@ async def bulk_create_session(items: list[SessionCreate], database: Session = De
 
 
 @app.delete("/session/bulk/", response_model=None, tags=["Session"])
-async def bulk_delete_session(ids: list[int], database: Session = Depends(get_db)) -> dict:
+async def bulk_delete_session(ids: list[int], database: DBSession = Depends(get_db)) -> dict:
     """Delete multiple Session entities at once"""
     deleted_count = 0
     not_found = []
@@ -459,7 +460,7 @@ async def bulk_delete_session(ids: list[int], database: Session = Depends(get_db
     }
 
 @app.put("/session/{session_id}/", response_model=None, tags=["Session"])
-async def update_session(session_id: int, session_data: SessionCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Session:
+async def update_session(session_id: int, session_data: SessionCreate  = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> Session:
     db_session = database.query(Session).filter(Session.id == session_id).first()
     if db_session is None:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -480,7 +481,7 @@ async def update_session(session_id: int, session_data: SessionCreate  = Body(al
 
 
 @app.delete("/session/{session_id}/", response_model=None, tags=["Session"])
-async def delete_session(session_id: int, database: Session = Depends(get_db)):
+async def delete_session(session_id: int, database: DBSession = Depends(get_db)):
     db_session = database.query(Session).filter(Session.id == session_id).first()
     if db_session is None:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -499,7 +500,7 @@ async def delete_session(session_id: int, database: Session = Depends(get_db)):
 ############################################
 
 @app.get("/review/", response_model=None, tags=["Review"])
-def get_all_review(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+def get_all_review(detailed: bool = False, database: DBSession = Depends(get_db)) -> list:
     from sqlalchemy.orm import joinedload
 
     # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
@@ -533,14 +534,14 @@ def get_all_review(detailed: bool = False, database: Session = Depends(get_db)) 
 
 
 @app.get("/review/count/", response_model=None, tags=["Review"])
-def get_count_review(database: Session = Depends(get_db)) -> dict:
+def get_count_review(database: DBSession = Depends(get_db)) -> dict:
     """Get the total count of Review entities"""
     count = database.query(Review).count()
     return {"count": count}
 
 
 @app.get("/review/paginated/", response_model=None, tags=["Review"])
-def get_paginated_review(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+def get_paginated_review(skip: int = 0, limit: int = 100, detailed: bool = False, database: DBSession = Depends(get_db)) -> dict:
     """Get paginated list of Review entities"""
     total = database.query(Review).count()
     review_list = database.query(Review).offset(skip).limit(limit).all()
@@ -554,7 +555,7 @@ def get_paginated_review(skip: int = 0, limit: int = 100, detailed: bool = False
 
 @app.get("/review/search/", response_model=None, tags=["Review"])
 def search_review(
-    database: Session = Depends(get_db)
+    database: DBSession = Depends(get_db)
 ) -> list:
     """Search Review entities by attributes"""
     query = database.query(Review)
@@ -565,7 +566,7 @@ def search_review(
 
 
 @app.get("/review/{review_id}/", response_model=None, tags=["Review"])
-async def get_review(review_id: int, database: Session = Depends(get_db)) -> Review:
+async def get_review(review_id: int, database: DBSession = Depends(get_db)) -> Review:
     db_review = database.query(Review).filter(Review.id == review_id).first()
     if db_review is None:
         raise HTTPException(status_code=404, detail="Review not found")
@@ -578,7 +579,7 @@ async def get_review(review_id: int, database: Session = Depends(get_db)) -> Rev
 
 
 @app.post("/review/", response_model=None, tags=["Review"])
-async def create_review(review_data: ReviewCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Review:
+async def create_review(review_data: ReviewCreate = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> Review:
 
     if review_data.session_1 is not None:
         db_session_1 = database.query(Session).filter(Session.id == review_data.session_1).first()
@@ -601,7 +602,7 @@ async def create_review(review_data: ReviewCreate = Body(alias="params", embed=T
 
 
 @app.post("/review/bulk/", response_model=None, tags=["Review"])
-async def bulk_create_review(items: list[ReviewCreate], database: Session = Depends(get_db)) -> dict:
+async def bulk_create_review(items: list[ReviewCreate], database: DBSession = Depends(get_db)) -> dict:
     """Create multiple Review entities at once"""
     created_items = []
     errors = []
@@ -633,7 +634,7 @@ async def bulk_create_review(items: list[ReviewCreate], database: Session = Depe
 
 
 @app.delete("/review/bulk/", response_model=None, tags=["Review"])
-async def bulk_delete_review(ids: list[int], database: Session = Depends(get_db)) -> dict:
+async def bulk_delete_review(ids: list[int], database: DBSession = Depends(get_db)) -> dict:
     """Delete multiple Review entities at once"""
     deleted_count = 0
     not_found = []
@@ -655,7 +656,7 @@ async def bulk_delete_review(ids: list[int], database: Session = Depends(get_db)
     }
 
 @app.put("/review/{review_id}/", response_model=None, tags=["Review"])
-async def update_review(review_id: int, review_data: ReviewCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Review:
+async def update_review(review_id: int, review_data: ReviewCreate  = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> Review:
     db_review = database.query(Review).filter(Review.id == review_id).first()
     if db_review is None:
         raise HTTPException(status_code=404, detail="Review not found")
@@ -675,7 +676,7 @@ async def update_review(review_id: int, review_data: ReviewCreate  = Body(alias=
 
 
 @app.delete("/review/{review_id}/", response_model=None, tags=["Review"])
-async def delete_review(review_id: int, database: Session = Depends(get_db)):
+async def delete_review(review_id: int, database: DBSession = Depends(get_db)):
     db_review = database.query(Review).filter(Review.id == review_id).first()
     if db_review is None:
         raise HTTPException(status_code=404, detail="Review not found")
@@ -694,7 +695,7 @@ async def delete_review(review_id: int, database: Session = Depends(get_db)):
 ############################################
 
 @app.get("/skillmatch/", response_model=None, tags=["SkillMatch"])
-def get_all_skillmatch(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+def get_all_skillmatch(detailed: bool = False, database: DBSession = Depends(get_db)) -> list:
     from sqlalchemy.orm import joinedload
 
     # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
@@ -749,14 +750,14 @@ def get_all_skillmatch(detailed: bool = False, database: Session = Depends(get_d
 
 
 @app.get("/skillmatch/count/", response_model=None, tags=["SkillMatch"])
-def get_count_skillmatch(database: Session = Depends(get_db)) -> dict:
+def get_count_skillmatch(database: DBSession = Depends(get_db)) -> dict:
     """Get the total count of SkillMatch entities"""
     count = database.query(SkillMatch).count()
     return {"count": count}
 
 
 @app.get("/skillmatch/paginated/", response_model=None, tags=["SkillMatch"])
-def get_paginated_skillmatch(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+def get_paginated_skillmatch(skip: int = 0, limit: int = 100, detailed: bool = False, database: DBSession = Depends(get_db)) -> dict:
     """Get paginated list of SkillMatch entities"""
     total = database.query(SkillMatch).count()
     skillmatch_list = database.query(SkillMatch).offset(skip).limit(limit).all()
@@ -788,7 +789,7 @@ def get_paginated_skillmatch(skip: int = 0, limit: int = 100, detailed: bool = F
 
 @app.get("/skillmatch/search/", response_model=None, tags=["SkillMatch"])
 def search_skillmatch(
-    database: Session = Depends(get_db)
+    database: DBSession = Depends(get_db)
 ) -> list:
     """Search SkillMatch entities by attributes"""
     query = database.query(SkillMatch)
@@ -799,7 +800,7 @@ def search_skillmatch(
 
 
 @app.get("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
-async def get_skillmatch(skillmatch_id: int, database: Session = Depends(get_db)) -> SkillMatch:
+async def get_skillmatch(skillmatch_id: int, database: DBSession = Depends(get_db)) -> SkillMatch:
     db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
     if db_skillmatch is None:
         raise HTTPException(status_code=404, detail="SkillMatch not found")
@@ -814,7 +815,7 @@ async def get_skillmatch(skillmatch_id: int, database: Session = Depends(get_db)
 
 
 @app.post("/skillmatch/", response_model=None, tags=["SkillMatch"])
-async def create_skillmatch(skillmatch_data: SkillMatchCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> SkillMatch:
+async def create_skillmatch(skillmatch_data: SkillMatchCreate = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> SkillMatch:
 
     if skillmatch_data.user_2 is not None:
         db_user_2 = database.query(User).filter(User.id == skillmatch_data.user_2).first()
@@ -872,7 +873,7 @@ async def create_skillmatch(skillmatch_data: SkillMatchCreate = Body(alias="para
 
 
 @app.post("/skillmatch/bulk/", response_model=None, tags=["SkillMatch"])
-async def bulk_create_skillmatch(items: list[SkillMatchCreate], database: Session = Depends(get_db)) -> dict:
+async def bulk_create_skillmatch(items: list[SkillMatchCreate], database: DBSession = Depends(get_db)) -> dict:
     """Create multiple SkillMatch entities at once"""
     created_items = []
     errors = []
@@ -906,7 +907,7 @@ async def bulk_create_skillmatch(items: list[SkillMatchCreate], database: Sessio
 
 
 @app.delete("/skillmatch/bulk/", response_model=None, tags=["SkillMatch"])
-async def bulk_delete_skillmatch(ids: list[int], database: Session = Depends(get_db)) -> dict:
+async def bulk_delete_skillmatch(ids: list[int], database: DBSession = Depends(get_db)) -> dict:
     """Delete multiple SkillMatch entities at once"""
     deleted_count = 0
     not_found = []
@@ -928,7 +929,7 @@ async def bulk_delete_skillmatch(ids: list[int], database: Session = Depends(get
     }
 
 @app.put("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
-async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> SkillMatch:
+async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreate  = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> SkillMatch:
     db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
     if db_skillmatch is None:
         raise HTTPException(status_code=404, detail="SkillMatch not found")
@@ -994,7 +995,7 @@ async def update_skillmatch(skillmatch_id: int, skillmatch_data: SkillMatchCreat
 
 
 @app.delete("/skillmatch/{skillmatch_id}/", response_model=None, tags=["SkillMatch"])
-async def delete_skillmatch(skillmatch_id: int, database: Session = Depends(get_db)):
+async def delete_skillmatch(skillmatch_id: int, database: DBSession = Depends(get_db)):
     db_skillmatch = database.query(SkillMatch).filter(SkillMatch.id == skillmatch_id).first()
     if db_skillmatch is None:
         raise HTTPException(status_code=404, detail="SkillMatch not found")
@@ -1013,7 +1014,7 @@ async def delete_skillmatch(skillmatch_id: int, database: Session = Depends(get_
 ############################################
 
 @app.get("/skillrequest/", response_model=None, tags=["SkillRequest"])
-def get_all_skillrequest(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+def get_all_skillrequest(detailed: bool = False, database: DBSession = Depends(get_db)) -> list:
     from sqlalchemy.orm import joinedload
 
     # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
@@ -1063,14 +1064,14 @@ def get_all_skillrequest(detailed: bool = False, database: Session = Depends(get
 
 
 @app.get("/skillrequest/count/", response_model=None, tags=["SkillRequest"])
-def get_count_skillrequest(database: Session = Depends(get_db)) -> dict:
+def get_count_skillrequest(database: DBSession = Depends(get_db)) -> dict:
     """Get the total count of SkillRequest entities"""
     count = database.query(SkillRequest).count()
     return {"count": count}
 
 
 @app.get("/skillrequest/paginated/", response_model=None, tags=["SkillRequest"])
-def get_paginated_skillrequest(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+def get_paginated_skillrequest(skip: int = 0, limit: int = 100, detailed: bool = False, database: DBSession = Depends(get_db)) -> dict:
     """Get paginated list of SkillRequest entities"""
     total = database.query(SkillRequest).count()
     skillrequest_list = database.query(SkillRequest).offset(skip).limit(limit).all()
@@ -1084,7 +1085,7 @@ def get_paginated_skillrequest(skip: int = 0, limit: int = 100, detailed: bool =
 
 @app.get("/skillrequest/search/", response_model=None, tags=["SkillRequest"])
 def search_skillrequest(
-    database: Session = Depends(get_db)
+    database: DBSession = Depends(get_db)
 ) -> list:
     """Search SkillRequest entities by attributes"""
     query = database.query(SkillRequest)
@@ -1095,7 +1096,7 @@ def search_skillrequest(
 
 
 @app.get("/skillrequest/{skillrequest_id}/", response_model=None, tags=["SkillRequest"])
-async def get_skillrequest(skillrequest_id: int, database: Session = Depends(get_db)) -> SkillRequest:
+async def get_skillrequest(skillrequest_id: int, database: DBSession = Depends(get_db)) -> SkillRequest:
     db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
     if db_skillrequest is None:
         raise HTTPException(status_code=404, detail="SkillRequest not found")
@@ -1108,7 +1109,7 @@ async def get_skillrequest(skillrequest_id: int, database: Session = Depends(get
 
 
 @app.post("/skillrequest/", response_model=None, tags=["SkillRequest"])
-async def create_skillrequest(skillrequest_data: SkillRequestCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> SkillRequest:
+async def create_skillrequest(skillrequest_data: SkillRequestCreate = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> SkillRequest:
 
     if skillrequest_data.skillmatch_2 :
         db_skillmatch_2 = database.query(SkillMatch).filter(SkillMatch.id == skillrequest_data.skillmatch_2).first()
@@ -1141,7 +1142,7 @@ async def create_skillrequest(skillrequest_data: SkillRequestCreate = Body(alias
 
 
 @app.post("/skillrequest/bulk/", response_model=None, tags=["SkillRequest"])
-async def bulk_create_skillrequest(items: list[SkillRequestCreate], database: Session = Depends(get_db)) -> dict:
+async def bulk_create_skillrequest(items: list[SkillRequestCreate], database: DBSession = Depends(get_db)) -> dict:
     """Create multiple SkillRequest entities at once"""
     created_items = []
     errors = []
@@ -1175,7 +1176,7 @@ async def bulk_create_skillrequest(items: list[SkillRequestCreate], database: Se
 
 
 @app.delete("/skillrequest/bulk/", response_model=None, tags=["SkillRequest"])
-async def bulk_delete_skillrequest(ids: list[int], database: Session = Depends(get_db)) -> dict:
+async def bulk_delete_skillrequest(ids: list[int], database: DBSession = Depends(get_db)) -> dict:
     """Delete multiple SkillRequest entities at once"""
     deleted_count = 0
     not_found = []
@@ -1197,7 +1198,7 @@ async def bulk_delete_skillrequest(ids: list[int], database: Session = Depends(g
     }
 
 @app.put("/skillrequest/{skillrequest_id}/", response_model=None, tags=["SkillRequest"])
-async def update_skillrequest(skillrequest_id: int, skillrequest_data: SkillRequestCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> SkillRequest:
+async def update_skillrequest(skillrequest_id: int, skillrequest_data: SkillRequestCreate  = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> SkillRequest:
     db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
     if db_skillrequest is None:
         raise HTTPException(status_code=404, detail="SkillRequest not found")
@@ -1229,7 +1230,7 @@ async def update_skillrequest(skillrequest_id: int, skillrequest_data: SkillRequ
 
 
 @app.delete("/skillrequest/{skillrequest_id}/", response_model=None, tags=["SkillRequest"])
-async def delete_skillrequest(skillrequest_id: int, database: Session = Depends(get_db)):
+async def delete_skillrequest(skillrequest_id: int, database: DBSession = Depends(get_db)):
     db_skillrequest = database.query(SkillRequest).filter(SkillRequest.id == skillrequest_id).first()
     if db_skillrequest is None:
         raise HTTPException(status_code=404, detail="SkillRequest not found")
@@ -1248,7 +1249,7 @@ async def delete_skillrequest(skillrequest_id: int, database: Session = Depends(
 ############################################
 
 @app.get("/skill/", response_model=None, tags=["Skill"])
-def get_all_skill(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+def get_all_skill(detailed: bool = False, database: DBSession = Depends(get_db)) -> list:
     from sqlalchemy.orm import joinedload
 
     # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
@@ -1287,14 +1288,14 @@ def get_all_skill(detailed: bool = False, database: Session = Depends(get_db)) -
 
 
 @app.get("/skill/count/", response_model=None, tags=["Skill"])
-def get_count_skill(database: Session = Depends(get_db)) -> dict:
+def get_count_skill(database: DBSession = Depends(get_db)) -> dict:
     """Get the total count of Skill entities"""
     count = database.query(Skill).count()
     return {"count": count}
 
 
 @app.get("/skill/paginated/", response_model=None, tags=["Skill"])
-def get_paginated_skill(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+def get_paginated_skill(skip: int = 0, limit: int = 100, detailed: bool = False, database: DBSession = Depends(get_db)) -> dict:
     """Get paginated list of Skill entities"""
     total = database.query(Skill).count()
     skill_list = database.query(Skill).offset(skip).limit(limit).all()
@@ -1326,7 +1327,7 @@ def get_paginated_skill(skip: int = 0, limit: int = 100, detailed: bool = False,
 
 @app.get("/skill/search/", response_model=None, tags=["Skill"])
 def search_skill(
-    database: Session = Depends(get_db)
+    database: DBSession = Depends(get_db)
 ) -> list:
     """Search Skill entities by attributes"""
     query = database.query(Skill)
@@ -1337,7 +1338,7 @@ def search_skill(
 
 
 @app.get("/skill/{skill_id}/", response_model=None, tags=["Skill"])
-async def get_skill(skill_id: int, database: Session = Depends(get_db)) -> Skill:
+async def get_skill(skill_id: int, database: DBSession = Depends(get_db)) -> Skill:
     db_skill = database.query(Skill).filter(Skill.id == skill_id).first()
     if db_skill is None:
         raise HTTPException(status_code=404, detail="Skill not found")
@@ -1352,7 +1353,7 @@ async def get_skill(skill_id: int, database: Session = Depends(get_db)) -> Skill
 
 
 @app.post("/skill/", response_model=None, tags=["Skill"])
-async def create_skill(skill_data: SkillCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Skill:
+async def create_skill(skill_data: SkillCreate = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> Skill:
 
 
     db_skill = Skill(
@@ -1398,7 +1399,7 @@ async def create_skill(skill_data: SkillCreate = Body(alias="params", embed=True
 
 
 @app.post("/skill/bulk/", response_model=None, tags=["Skill"])
-async def bulk_create_skill(items: list[SkillCreate], database: Session = Depends(get_db)) -> dict:
+async def bulk_create_skill(items: list[SkillCreate], database: DBSession = Depends(get_db)) -> dict:
     """Create multiple Skill entities at once"""
     created_items = []
     errors = []
@@ -1428,7 +1429,7 @@ async def bulk_create_skill(items: list[SkillCreate], database: Session = Depend
 
 
 @app.delete("/skill/bulk/", response_model=None, tags=["Skill"])
-async def bulk_delete_skill(ids: list[int], database: Session = Depends(get_db)) -> dict:
+async def bulk_delete_skill(ids: list[int], database: DBSession = Depends(get_db)) -> dict:
     """Delete multiple Skill entities at once"""
     deleted_count = 0
     not_found = []
@@ -1450,7 +1451,7 @@ async def bulk_delete_skill(ids: list[int], database: Session = Depends(get_db))
     }
 
 @app.put("/skill/{skill_id}/", response_model=None, tags=["Skill"])
-async def update_skill(skill_id: int, skill_data: SkillCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> Skill:
+async def update_skill(skill_id: int, skill_data: SkillCreate  = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> Skill:
     db_skill = database.query(Skill).filter(Skill.id == skill_id).first()
     if db_skill is None:
         raise HTTPException(status_code=404, detail="Skill not found")
@@ -1509,7 +1510,7 @@ async def update_skill(skill_id: int, skill_data: SkillCreate  = Body(alias="par
 
 
 @app.delete("/skill/{skill_id}/", response_model=None, tags=["Skill"])
-async def delete_skill(skill_id: int, database: Session = Depends(get_db)):
+async def delete_skill(skill_id: int, database: DBSession = Depends(get_db)):
     db_skill = database.query(Skill).filter(Skill.id == skill_id).first()
     if db_skill is None:
         raise HTTPException(status_code=404, detail="Skill not found")
@@ -1528,7 +1529,7 @@ async def delete_skill(skill_id: int, database: Session = Depends(get_db)):
 ############################################
 
 @app.get("/userskill/", response_model=None, tags=["UserSkill"])
-def get_all_userskill(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+def get_all_userskill(detailed: bool = False, database: DBSession = Depends(get_db)) -> list:
     from sqlalchemy.orm import joinedload
 
     # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
@@ -1570,14 +1571,14 @@ def get_all_userskill(detailed: bool = False, database: Session = Depends(get_db
 
 
 @app.get("/userskill/count/", response_model=None, tags=["UserSkill"])
-def get_count_userskill(database: Session = Depends(get_db)) -> dict:
+def get_count_userskill(database: DBSession = Depends(get_db)) -> dict:
     """Get the total count of UserSkill entities"""
     count = database.query(UserSkill).count()
     return {"count": count}
 
 
 @app.get("/userskill/paginated/", response_model=None, tags=["UserSkill"])
-def get_paginated_userskill(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+def get_paginated_userskill(skip: int = 0, limit: int = 100, detailed: bool = False, database: DBSession = Depends(get_db)) -> dict:
     """Get paginated list of UserSkill entities"""
     total = database.query(UserSkill).count()
     userskill_list = database.query(UserSkill).offset(skip).limit(limit).all()
@@ -1591,7 +1592,7 @@ def get_paginated_userskill(skip: int = 0, limit: int = 100, detailed: bool = Fa
 
 @app.get("/userskill/search/", response_model=None, tags=["UserSkill"])
 def search_userskill(
-    database: Session = Depends(get_db)
+    database: DBSession = Depends(get_db)
 ) -> list:
     """Search UserSkill entities by attributes"""
     query = database.query(UserSkill)
@@ -1602,7 +1603,7 @@ def search_userskill(
 
 
 @app.get("/userskill/{userskill_id}/", response_model=None, tags=["UserSkill"])
-async def get_userskill(userskill_id: int, database: Session = Depends(get_db)) -> UserSkill:
+async def get_userskill(userskill_id: int, database: DBSession = Depends(get_db)) -> UserSkill:
     db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
     if db_userskill is None:
         raise HTTPException(status_code=404, detail="UserSkill not found")
@@ -1615,7 +1616,7 @@ async def get_userskill(userskill_id: int, database: Session = Depends(get_db)) 
 
 
 @app.post("/userskill/", response_model=None, tags=["UserSkill"])
-async def create_userskill(userskill_data: UserSkillCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> UserSkill:
+async def create_userskill(userskill_data: UserSkillCreate = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> UserSkill:
 
     if userskill_data.skill is not None:
         db_skill = database.query(Skill).filter(Skill.id == userskill_data.skill).first()
@@ -1644,7 +1645,7 @@ async def create_userskill(userskill_data: UserSkillCreate = Body(alias="params"
 
 
 @app.post("/userskill/bulk/", response_model=None, tags=["UserSkill"])
-async def bulk_create_userskill(items: list[UserSkillCreate], database: Session = Depends(get_db)) -> dict:
+async def bulk_create_userskill(items: list[UserSkillCreate], database: DBSession = Depends(get_db)) -> dict:
     """Create multiple UserSkill entities at once"""
     created_items = []
     errors = []
@@ -1678,7 +1679,7 @@ async def bulk_create_userskill(items: list[UserSkillCreate], database: Session 
 
 
 @app.delete("/userskill/bulk/", response_model=None, tags=["UserSkill"])
-async def bulk_delete_userskill(ids: list[int], database: Session = Depends(get_db)) -> dict:
+async def bulk_delete_userskill(ids: list[int], database: DBSession = Depends(get_db)) -> dict:
     """Delete multiple UserSkill entities at once"""
     deleted_count = 0
     not_found = []
@@ -1700,7 +1701,7 @@ async def bulk_delete_userskill(ids: list[int], database: Session = Depends(get_
     }
 
 @app.put("/userskill/{userskill_id}/", response_model=None, tags=["UserSkill"])
-async def update_userskill(userskill_id: int, userskill_data: UserSkillCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> UserSkill:
+async def update_userskill(userskill_id: int, userskill_data: UserSkillCreate  = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> UserSkill:
     db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
     if db_userskill is None:
         raise HTTPException(status_code=404, detail="UserSkill not found")
@@ -1725,7 +1726,7 @@ async def update_userskill(userskill_id: int, userskill_data: UserSkillCreate  =
 
 
 @app.delete("/userskill/{userskill_id}/", response_model=None, tags=["UserSkill"])
-async def delete_userskill(userskill_id: int, database: Session = Depends(get_db)):
+async def delete_userskill(userskill_id: int, database: DBSession = Depends(get_db)):
     db_userskill = database.query(UserSkill).filter(UserSkill.id == userskill_id).first()
     if db_userskill is None:
         raise HTTPException(status_code=404, detail="UserSkill not found")
@@ -1744,7 +1745,7 @@ async def delete_userskill(userskill_id: int, database: Session = Depends(get_db
 ############################################
 
 @app.get("/user/", response_model=None, tags=["User"])
-def get_all_user(detailed: bool = False, database: Session = Depends(get_db)) -> list:
+def get_all_user(detailed: bool = False, database: DBSession = Depends(get_db)) -> list:
     from sqlalchemy.orm import joinedload
 
     # Use detailed=true to get entities with eagerly loaded relationships (for tables with lookup columns)
@@ -1795,14 +1796,14 @@ def get_all_user(detailed: bool = False, database: Session = Depends(get_db)) ->
 
 
 @app.get("/user/count/", response_model=None, tags=["User"])
-def get_count_user(database: Session = Depends(get_db)) -> dict:
+def get_count_user(database: DBSession = Depends(get_db)) -> dict:
     """Get the total count of User entities"""
     count = database.query(User).count()
     return {"count": count}
 
 
 @app.get("/user/paginated/", response_model=None, tags=["User"])
-def get_paginated_user(skip: int = 0, limit: int = 100, detailed: bool = False, database: Session = Depends(get_db)) -> dict:
+def get_paginated_user(skip: int = 0, limit: int = 100, detailed: bool = False, database: DBSession = Depends(get_db)) -> dict:
     """Get paginated list of User entities"""
     total = database.query(User).count()
     user_list = database.query(User).offset(skip).limit(limit).all()
@@ -1836,7 +1837,7 @@ def get_paginated_user(skip: int = 0, limit: int = 100, detailed: bool = False, 
 
 @app.get("/user/search/", response_model=None, tags=["User"])
 def search_user(
-    database: Session = Depends(get_db)
+    database: DBSession = Depends(get_db)
 ) -> list:
     """Search User entities by attributes"""
     query = database.query(User)
@@ -1847,7 +1848,7 @@ def search_user(
 
 
 @app.get("/user/{user_id}/", response_model=None, tags=["User"])
-async def get_user(user_id: int, database: Session = Depends(get_db)) -> User:
+async def get_user(user_id: int, database: DBSession = Depends(get_db)) -> User:
     db_user = database.query(User).filter(User.id == user_id).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -1864,7 +1865,7 @@ async def get_user(user_id: int, database: Session = Depends(get_db)) -> User:
 
 
 @app.post("/user/", response_model=None, tags=["User"])
-async def create_user(user_data: UserCreate = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> User:
+async def create_user(user_data: UserCreate = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> User:
 
 
     db_user = User(
@@ -1936,7 +1937,7 @@ async def create_user(user_data: UserCreate = Body(alias="params", embed=True), 
 
 
 @app.post("/user/bulk/", response_model=None, tags=["User"])
-async def bulk_create_user(items: list[UserCreate], database: Session = Depends(get_db)) -> dict:
+async def bulk_create_user(items: list[UserCreate], database: DBSession = Depends(get_db)) -> dict:
     """Create multiple User entities at once"""
     created_items = []
     errors = []
@@ -1966,7 +1967,7 @@ async def bulk_create_user(items: list[UserCreate], database: Session = Depends(
 
 
 @app.delete("/user/bulk/", response_model=None, tags=["User"])
-async def bulk_delete_user(ids: list[int], database: Session = Depends(get_db)) -> dict:
+async def bulk_delete_user(ids: list[int], database: DBSession = Depends(get_db)) -> dict:
     """Delete multiple User entities at once"""
     deleted_count = 0
     not_found = []
@@ -1988,7 +1989,7 @@ async def bulk_delete_user(ids: list[int], database: Session = Depends(get_db)) 
     }
 
 @app.put("/user/{user_id}/", response_model=None, tags=["User"])
-async def update_user(user_id: int, user_data: UserCreate  = Body(alias="params", embed=True), database: Session = Depends(get_db)) -> User:
+async def update_user(user_id: int, user_data: UserCreate  = Body(alias="params", embed=True), database: DBSession = Depends(get_db)) -> User:
     db_user = database.query(User).filter(User.id == user_id).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -2082,7 +2083,7 @@ async def update_user(user_id: int, user_data: UserCreate  = Body(alias="params"
 
 
 @app.delete("/user/{user_id}/", response_model=None, tags=["User"])
-async def delete_user(user_id: int, database: Session = Depends(get_db)):
+async def delete_user(user_id: int, database: DBSession = Depends(get_db)):
     db_user = database.query(User).filter(User.id == user_id).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
