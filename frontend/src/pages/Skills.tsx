@@ -40,8 +40,8 @@ const Skills: React.FC = () => {
             isClassMethod={true}
             backendUrl={API_BASE}
             parameters={[
-              { name: "skillId", type: "string", required: true },
-              { name: "name", type: "string", required: true },
+              { name: "skillId", type: "integer", required: true },
+              { name: "skillName", type: "string", required: true },
               { name: "category", type: "string", required: true },
               { name: "description", type: "string", required: false },
               { name: "skillLevel", type: "string", required: true, inputKind: "enum", options: ["BEGINNER","INTERMEDIATE","ADVANCED","EXPERT","MASTERCLASS"] },
