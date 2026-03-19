@@ -88,8 +88,8 @@ const Matching: React.FC = () => {
                 cascade: {
                   fetchUrl: "/skillmatch/{value}",
                   display: [
-                    { label: "Learner",        field: "skillmatch.user_2_id" },
-                    { label: "Teacher",       field: "skillmatch.user_3_id" },
+                    { label: "Learner",        field: "skillmatch.user_3_id" },
+                    { label: "Teacher",       field: "skillmatch.user_2_id" },
                     { label: "Current Status", field: "skillmatch.status" }
                   ],
                   prefill: [
