@@ -20,11 +20,32 @@ render.yaml        Render deployment config
 docker-compose.yml Local development setup
 ```
 
+## Project Description
+
+This is an app that can be used in an organisation or in educational institution where learners can find their teachers. Following features are possible with the current implementation of this app.
+
+1. Register a new skill with skill id, its difficulty level, estimated duration required for teaching and so on.
+2. Register a new user and record their skill
+3. Any registered user can request a skill through the Matching page, and click the Run Matching button to find their teacher.
+4. After the teacher accepts for a session (in offline), the moderator/admin can change the request status from PENDING to ACTIVE then a session will be set-up
+5. Once the session is Done, the moderator/admin can change the stauts to COMPLETE and the atendee can submit their review through the sessions page.
+
+<table>
+  <tr>
+    <td><img src="images/home.png" width="300"/></td>
+    <td><img src="images/user.png" width="300"/></td>
+  </tr>
+  <tr>
+    <td><img src="images/skill.png" width="300"/></td>
+    <td><img src="images/matching.png" width="300"/></td>
+  </tr>
+</table>
+
 ## Deploy
 
 Click the **Deploy to Render** button above to launch your app for free.
 
-Render will automatically set up your frontend, backend, and agent services.
+Render will automatically set up your frontend and backend.
 After the first deploy, pushing updates to this repo will auto-redeploy.
 
 ## Local Development
