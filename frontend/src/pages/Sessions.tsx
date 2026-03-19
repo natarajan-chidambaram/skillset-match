@@ -62,14 +62,13 @@ const Sessions: React.FC = () => {
                   className="action-button-component"
                   style={btnStyle}
                   label="Submit review"
-                  endpoint="/session/"
+                  endpoint="/review/"
                   isClassMethod={true}
                   backendUrl={API_BASE}
                   parameters={[
-                    { name: "session_1", type: "string", required: true, inputKind: "lookup", entity: "session", lookupField: "sessionId" },
+                    { name: "session_1", type: "string", required: true, inputKind: "lookup", entity: "sessions", lookupField: "sessionId" },
                     { name: "rating", type: "number", required: true, inputKind: "enum", options: ["0", "1", "2", "3", "4", "5"] },
-                    { name: "comments", type: "string", required: false },
-                    { name: "reviewDate", type: "date", required: true }
+                    { name: "comments", type: "string", required: true }
                   ]}
                 />
               </div>
