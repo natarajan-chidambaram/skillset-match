@@ -1,8 +1,7 @@
 import React from "react";
 import { MethodButton } from "../components/MethodButton";
 
-const API_BASE = "https://skillset-match-3.onrender.com";
-// const API_BASE = "http://localhost:8000";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 const Matching: React.FC = () => {
   return (
