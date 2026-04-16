@@ -38,6 +38,8 @@ def init_db():
             echo=False
         )
     else:
+        if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+            SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
         engine = create_engine(
             SQLALCHEMY_DATABASE_URL,
             pool_size=10,
