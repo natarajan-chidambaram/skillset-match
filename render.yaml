@@ -18,7 +18,7 @@ services:
   - type: static
     name: skillset-match-frontend
     buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: build
+    staticPublishPath: frontend/build
     envVars:
       - key: VITE_API_URL
         value: https://skillset-match-backend.onrender.com
