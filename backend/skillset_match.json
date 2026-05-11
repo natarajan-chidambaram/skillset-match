@@ -1,0 +1,1598 @@
+{
+  "project": {
+    "id": "2a341436-be43-45cc-8615-4c435540ca28",
+    "type": "Project",
+    "name": "skillset_match",
+    "description": "New project",
+    "owner": "User",
+    "createdAt": "2026-03-05T10:20:53.682Z",
+    "currentDiagramType": "ClassDiagram",
+    "diagrams": {
+      "ClassDiagram": {
+        "id": "94902a96-aaa3-46f4-b1b1-50cb5c244233",
+        "title": "Class Diagram",
+        "model": {
+          "version": "3.0.0",
+          "type": "ClassDiagram",
+          "size": {
+            "width": 1300,
+            "height": 740
+          },
+          "interactive": {
+            "elements": {},
+            "relationships": {}
+          },
+          "elements": {
+            "9ea8c4c7-3cbd-4ecd-b525-2ec050ee13db": {
+              "id": "9ea8c4c7-3cbd-4ecd-b525-2ec050ee13db",
+              "name": "User",
+              "type": "Class",
+              "owner": null,
+              "bounds": {
+                "x": -590,
+                "y": -340,
+                "width": 160,
+                "height": 130
+              },
+              "attributes": [
+                "59adcee4-f48c-419b-8a5e-86bcb47795a3",
+                "5b7a7085-1919-426f-b809-db7732eac635",
+                "ea95eaeb-06f6-4755-bb56-4e38e55ed87a"
+              ],
+              "methods": []
+            },
+            "59adcee4-f48c-419b-8a5e-86bcb47795a3": {
+              "id": "59adcee4-f48c-419b-8a5e-86bcb47795a3",
+              "name": "userId",
+              "type": "ClassAttribute",
+              "owner": "9ea8c4c7-3cbd-4ecd-b525-2ec050ee13db",
+              "bounds": {
+                "x": -589.5,
+                "y": -299.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "5b7a7085-1919-426f-b809-db7732eac635": {
+              "id": "5b7a7085-1919-426f-b809-db7732eac635",
+              "name": "userName",
+              "type": "ClassAttribute",
+              "owner": "9ea8c4c7-3cbd-4ecd-b525-2ec050ee13db",
+              "bounds": {
+                "x": -589.5,
+                "y": -269.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "ea95eaeb-06f6-4755-bb56-4e38e55ed87a": {
+              "id": "ea95eaeb-06f6-4755-bb56-4e38e55ed87a",
+              "name": "emailId",
+              "type": "ClassAttribute",
+              "owner": "9ea8c4c7-3cbd-4ecd-b525-2ec050ee13db",
+              "bounds": {
+                "x": -589.5,
+                "y": -239.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "0a3e1eab-2826-43a0-bad7-87e0e59b40a8": {
+              "id": "0a3e1eab-2826-43a0-bad7-87e0e59b40a8",
+              "name": "UserSkill",
+              "type": "Class",
+              "owner": null,
+              "bounds": {
+                "x": -300,
+                "y": -340,
+                "width": 210,
+                "height": 160
+              },
+              "attributes": [
+                "981daf0f-4e6d-4d57-857c-12869ec82922",
+                "869818a7-3b4a-4c32-837c-0725a6dd842d",
+                "fc8fe999-8d3c-4612-b971-aa700bf92670",
+                "2b608f58-95cf-4480-82c0-feb5b7e59162"
+              ],
+              "methods": []
+            },
+            "981daf0f-4e6d-4d57-857c-12869ec82922": {
+              "id": "981daf0f-4e6d-4d57-857c-12869ec82922",
+              "name": "skillId",
+              "type": "ClassAttribute",
+              "owner": "0a3e1eab-2826-43a0-bad7-87e0e59b40a8",
+              "bounds": {
+                "x": -299.5,
+                "y": -299.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "869818a7-3b4a-4c32-837c-0725a6dd842d": {
+              "id": "869818a7-3b4a-4c32-837c-0725a6dd842d",
+              "name": "skillLevel",
+              "type": "ClassAttribute",
+              "owner": "0a3e1eab-2826-43a0-bad7-87e0e59b40a8",
+              "bounds": {
+                "x": -299.5,
+                "y": -269.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "UserSkillLevel",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "fc8fe999-8d3c-4612-b971-aa700bf92670": {
+              "id": "fc8fe999-8d3c-4612-b971-aa700bf92670",
+              "name": "yearsOfExperience",
+              "type": "ClassAttribute",
+              "owner": "0a3e1eab-2826-43a0-bad7-87e0e59b40a8",
+              "bounds": {
+                "x": -299.5,
+                "y": -239.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "2b608f58-95cf-4480-82c0-feb5b7e59162": {
+              "id": "2b608f58-95cf-4480-82c0-feb5b7e59162",
+              "name": "certification",
+              "type": "ClassAttribute",
+              "owner": "0a3e1eab-2826-43a0-bad7-87e0e59b40a8",
+              "bounds": {
+                "x": -299.5,
+                "y": -209.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "bool",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300": {
+              "id": "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300",
+              "name": "Skill",
+              "type": "Class",
+              "owner": null,
+              "bounds": {
+                "x": 40,
+                "y": -350,
+                "width": 210,
+                "height": 220
+              },
+              "attributes": [
+                "1d3839a9-ceba-416f-98c8-57e81929768a",
+                "f73ae32f-456f-4a8c-9765-3125cdacaf38",
+                "24a19e80-93f6-4cb2-9456-bf26e2ed6740",
+                "48b01039-622a-434f-8cb8-9aa4acd01b66",
+                "c390effa-18c5-4355-bbdb-074efbcaa5c2",
+                "88f1a3bf-8d57-4ff8-9e84-0a22903a9920"
+              ],
+              "methods": []
+            },
+            "1d3839a9-ceba-416f-98c8-57e81929768a": {
+              "id": "1d3839a9-ceba-416f-98c8-57e81929768a",
+              "name": "skillId",
+              "type": "ClassAttribute",
+              "owner": "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300",
+              "bounds": {
+                "x": 40.5,
+                "y": -309.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "f73ae32f-456f-4a8c-9765-3125cdacaf38": {
+              "id": "f73ae32f-456f-4a8c-9765-3125cdacaf38",
+              "name": "skillName",
+              "type": "ClassAttribute",
+              "owner": "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300",
+              "bounds": {
+                "x": 40.5,
+                "y": -279.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "24a19e80-93f6-4cb2-9456-bf26e2ed6740": {
+              "id": "24a19e80-93f6-4cb2-9456-bf26e2ed6740",
+              "name": "category",
+              "type": "ClassAttribute",
+              "owner": "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300",
+              "bounds": {
+                "x": 40.5,
+                "y": -249.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "48b01039-622a-434f-8cb8-9aa4acd01b66": {
+              "id": "48b01039-622a-434f-8cb8-9aa4acd01b66",
+              "name": "description",
+              "type": "ClassAttribute",
+              "owner": "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300",
+              "bounds": {
+                "x": 40.5,
+                "y": -219.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "c390effa-18c5-4355-bbdb-074efbcaa5c2": {
+              "id": "c390effa-18c5-4355-bbdb-074efbcaa5c2",
+              "name": "skillLevel",
+              "type": "ClassAttribute",
+              "owner": "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300",
+              "bounds": {
+                "x": 40.5,
+                "y": -189.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "TechSkillLevel",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "88f1a3bf-8d57-4ff8-9e84-0a22903a9920": {
+              "id": "88f1a3bf-8d57-4ff8-9e84-0a22903a9920",
+              "name": "estimatedDuration",
+              "type": "ClassAttribute",
+              "owner": "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300",
+              "bounds": {
+                "x": 40.5,
+                "y": -159.5,
+                "width": 209,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "63505601-bb2a-47cb-a20e-632777a06e67": {
+              "id": "63505601-bb2a-47cb-a20e-632777a06e67",
+              "name": "SkillRequest",
+              "type": "Class",
+              "owner": null,
+              "bounds": {
+                "x": -270,
+                "y": -140,
+                "width": 220,
+                "height": 160
+              },
+              "attributes": [
+                "9f91f65d-cf75-464c-8ba2-af05aaeabd27",
+                "4669c7e4-b8f3-4774-af0a-34b68d23cd38",
+                "8864cdb7-b3f0-46e3-ab29-f5d4cf7dee75",
+                "6dedf4ac-07d4-4d94-82ee-6513e77985e5"
+              ],
+              "methods": []
+            },
+            "9f91f65d-cf75-464c-8ba2-af05aaeabd27": {
+              "id": "9f91f65d-cf75-464c-8ba2-af05aaeabd27",
+              "name": "requestId",
+              "type": "ClassAttribute",
+              "owner": "63505601-bb2a-47cb-a20e-632777a06e67",
+              "bounds": {
+                "x": -269.5,
+                "y": -99.5,
+                "width": 219,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "4669c7e4-b8f3-4774-af0a-34b68d23cd38": {
+              "id": "4669c7e4-b8f3-4774-af0a-34b68d23cd38",
+              "name": "createdDate",
+              "type": "ClassAttribute",
+              "owner": "63505601-bb2a-47cb-a20e-632777a06e67",
+              "bounds": {
+                "x": -269.5,
+                "y": -69.5,
+                "width": 219,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "date",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "8864cdb7-b3f0-46e3-ab29-f5d4cf7dee75": {
+              "id": "8864cdb7-b3f0-46e3-ab29-f5d4cf7dee75",
+              "name": "status",
+              "type": "ClassAttribute",
+              "owner": "63505601-bb2a-47cb-a20e-632777a06e67",
+              "bounds": {
+                "x": -269.5,
+                "y": -39.5,
+                "width": 219,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "SkillRequestStatus",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "6dedf4ac-07d4-4d94-82ee-6513e77985e5": {
+              "id": "6dedf4ac-07d4-4d94-82ee-6513e77985e5",
+              "name": "deadlineDate",
+              "type": "ClassAttribute",
+              "owner": "63505601-bb2a-47cb-a20e-632777a06e67",
+              "bounds": {
+                "x": -269.5,
+                "y": -9.5,
+                "width": 219,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "date",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "c92da6fe-f60a-4a01-a5ba-2553359d4c37": {
+              "id": "c92da6fe-f60a-4a01-a5ba-2553359d4c37",
+              "name": "SkillMatch",
+              "type": "Class",
+              "owner": null,
+              "bounds": {
+                "x": -590,
+                "y": -120,
+                "width": 200,
+                "height": 160
+              },
+              "attributes": [
+                "053e502c-c1a3-44d7-af3e-7117298741dd",
+                "e81fdfc3-7f5d-4cdc-ae17-6c2853d5e21a",
+                "248d3fb6-9a1a-4e06-a28d-dd4842caa9f2",
+                "76b7ffb6-4efe-4489-903f-c36ccc0ef4b3"
+              ],
+              "methods": []
+            },
+            "053e502c-c1a3-44d7-af3e-7117298741dd": {
+              "id": "053e502c-c1a3-44d7-af3e-7117298741dd",
+              "name": "matchId",
+              "type": "ClassAttribute",
+              "owner": "c92da6fe-f60a-4a01-a5ba-2553359d4c37",
+              "bounds": {
+                "x": -589.5,
+                "y": -79.5,
+                "width": 199,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "e81fdfc3-7f5d-4cdc-ae17-6c2853d5e21a": {
+              "id": "e81fdfc3-7f5d-4cdc-ae17-6c2853d5e21a",
+              "name": "createdDate",
+              "type": "ClassAttribute",
+              "owner": "c92da6fe-f60a-4a01-a5ba-2553359d4c37",
+              "bounds": {
+                "x": -589.5,
+                "y": -49.5,
+                "width": 199,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "date",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "248d3fb6-9a1a-4e06-a28d-dd4842caa9f2": {
+              "id": "248d3fb6-9a1a-4e06-a28d-dd4842caa9f2",
+              "name": "startDate",
+              "type": "ClassAttribute",
+              "owner": "c92da6fe-f60a-4a01-a5ba-2553359d4c37",
+              "bounds": {
+                "x": -589.5,
+                "y": -19.5,
+                "width": 199,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "date",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "76b7ffb6-4efe-4489-903f-c36ccc0ef4b3": {
+              "id": "76b7ffb6-4efe-4489-903f-c36ccc0ef4b3",
+              "name": "status",
+              "type": "ClassAttribute",
+              "owner": "c92da6fe-f60a-4a01-a5ba-2553359d4c37",
+              "bounds": {
+                "x": -589.5,
+                "y": 10.5,
+                "width": 199,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "SkillMatchStatus",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "1839b10b-70ba-4942-b4ac-8ce40a8e06ac": {
+              "id": "1839b10b-70ba-4942-b4ac-8ce40a8e06ac",
+              "name": "Review",
+              "type": "Class",
+              "owner": null,
+              "bounds": {
+                "x": 350,
+                "y": -80,
+                "width": 160,
+                "height": 130
+              },
+              "attributes": [
+                "53d7e9fe-c3b3-493e-ad42-09040c357b76",
+                "9a7a54e3-33b0-4a47-9568-0d6e036e5064",
+                "5652ce1e-8cc7-4ac9-b9e0-315e2b8b6a23"
+              ],
+              "methods": []
+            },
+            "53d7e9fe-c3b3-493e-ad42-09040c357b76": {
+              "id": "53d7e9fe-c3b3-493e-ad42-09040c357b76",
+              "name": "reviewId",
+              "type": "ClassAttribute",
+              "owner": "1839b10b-70ba-4942-b4ac-8ce40a8e06ac",
+              "bounds": {
+                "x": 350.5,
+                "y": -39.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "9a7a54e3-33b0-4a47-9568-0d6e036e5064": {
+              "id": "9a7a54e3-33b0-4a47-9568-0d6e036e5064",
+              "name": "rating",
+              "type": "ClassAttribute",
+              "owner": "1839b10b-70ba-4942-b4ac-8ce40a8e06ac",
+              "bounds": {
+                "x": 350.5,
+                "y": -9.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "5652ce1e-8cc7-4ac9-b9e0-315e2b8b6a23": {
+              "id": "5652ce1e-8cc7-4ac9-b9e0-315e2b8b6a23",
+              "name": "comments",
+              "type": "ClassAttribute",
+              "owner": "1839b10b-70ba-4942-b4ac-8ce40a8e06ac",
+              "bounds": {
+                "x": 350.5,
+                "y": 20.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "282207cd-25b7-471f-b235-90ccfe757938": {
+              "id": "282207cd-25b7-471f-b235-90ccfe757938",
+              "name": "Session",
+              "type": "Class",
+              "owner": null,
+              "bounds": {
+                "x": 20,
+                "y": -100,
+                "width": 220,
+                "height": 160
+              },
+              "attributes": [
+                "e10298d8-8ed0-4cc2-a792-9be291831a1b",
+                "825f1c5e-d395-44c1-ba4e-0d99020d8105",
+                "aafdb9f1-cc28-4f0d-8e64-35660ccdb6aa",
+                "ab8f9ac0-35d4-4f43-896f-dae78e48b553"
+              ],
+              "methods": []
+            },
+            "e10298d8-8ed0-4cc2-a792-9be291831a1b": {
+              "id": "e10298d8-8ed0-4cc2-a792-9be291831a1b",
+              "name": "sessionId",
+              "type": "ClassAttribute",
+              "owner": "282207cd-25b7-471f-b235-90ccfe757938",
+              "bounds": {
+                "x": 20.5,
+                "y": -59.5,
+                "width": 219,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "825f1c5e-d395-44c1-ba4e-0d99020d8105": {
+              "id": "825f1c5e-d395-44c1-ba4e-0d99020d8105",
+              "name": "sessionDate",
+              "type": "ClassAttribute",
+              "owner": "282207cd-25b7-471f-b235-90ccfe757938",
+              "bounds": {
+                "x": 20.5,
+                "y": -29.5,
+                "width": 219,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "date",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "aafdb9f1-cc28-4f0d-8e64-35660ccdb6aa": {
+              "id": "aafdb9f1-cc28-4f0d-8e64-35660ccdb6aa",
+              "name": "duration",
+              "type": "ClassAttribute",
+              "owner": "282207cd-25b7-471f-b235-90ccfe757938",
+              "bounds": {
+                "x": 20.5,
+                "y": 0.5,
+                "width": 219,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "int",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "ab8f9ac0-35d4-4f43-896f-dae78e48b553": {
+              "id": "ab8f9ac0-35d4-4f43-896f-dae78e48b553",
+              "name": "sessionType",
+              "type": "ClassAttribute",
+              "owner": "282207cd-25b7-471f-b235-90ccfe757938",
+              "bounds": {
+                "x": 20.5,
+                "y": 30.5,
+                "width": 219,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "SessionType",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "5873ecb5-c434-4279-9069-0a719897cfd5": {
+              "id": "5873ecb5-c434-4279-9069-0a719897cfd5",
+              "name": "UserSkillLevel",
+              "type": "Enumeration",
+              "owner": null,
+              "bounds": {
+                "x": -560,
+                "y": 140,
+                "width": 170,
+                "height": 200
+              },
+              "attributes": [
+                "34c7eb3b-2412-44d7-8dec-32a20f0109f8",
+                "9584bcda-95b6-4e0c-b4b9-f7c79474e242",
+                "7078cab4-57bd-4a49-a44d-d9116b0a2398",
+                "ab87598e-23cb-416c-a524-43c815e0d328",
+                "eb0e6df2-5caa-4d39-a70c-be566f807043"
+              ],
+              "methods": []
+            },
+            "34c7eb3b-2412-44d7-8dec-32a20f0109f8": {
+              "id": "34c7eb3b-2412-44d7-8dec-32a20f0109f8",
+              "name": "NOVICE",
+              "type": "ClassAttribute",
+              "owner": "5873ecb5-c434-4279-9069-0a719897cfd5",
+              "bounds": {
+                "x": -559.5,
+                "y": 190.5,
+                "width": 169,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "9584bcda-95b6-4e0c-b4b9-f7c79474e242": {
+              "id": "9584bcda-95b6-4e0c-b4b9-f7c79474e242",
+              "name": "COMPETENT",
+              "type": "ClassAttribute",
+              "owner": "5873ecb5-c434-4279-9069-0a719897cfd5",
+              "bounds": {
+                "x": -559.5,
+                "y": 220.5,
+                "width": 169,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "7078cab4-57bd-4a49-a44d-d9116b0a2398": {
+              "id": "7078cab4-57bd-4a49-a44d-d9116b0a2398",
+              "name": "PROFICIENT",
+              "type": "ClassAttribute",
+              "owner": "5873ecb5-c434-4279-9069-0a719897cfd5",
+              "bounds": {
+                "x": -559.5,
+                "y": 250.5,
+                "width": 169,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "ab87598e-23cb-416c-a524-43c815e0d328": {
+              "id": "ab87598e-23cb-416c-a524-43c815e0d328",
+              "name": "EXPERT",
+              "type": "ClassAttribute",
+              "owner": "5873ecb5-c434-4279-9069-0a719897cfd5",
+              "bounds": {
+                "x": -559.5,
+                "y": 280.5,
+                "width": 169,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "eb0e6df2-5caa-4d39-a70c-be566f807043": {
+              "id": "eb0e6df2-5caa-4d39-a70c-be566f807043",
+              "name": "AUTHORITY",
+              "type": "ClassAttribute",
+              "owner": "5873ecb5-c434-4279-9069-0a719897cfd5",
+              "bounds": {
+                "x": -559.5,
+                "y": 310.5,
+                "width": 169,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "b6131361-b58f-466b-a82f-9ec35b91c173": {
+              "id": "b6131361-b58f-466b-a82f-9ec35b91c173",
+              "name": "TechSkillLevel",
+              "type": "Enumeration",
+              "owner": null,
+              "bounds": {
+                "x": -330,
+                "y": 140,
+                "width": 160,
+                "height": 200
+              },
+              "attributes": [
+                "f65927bb-2002-483f-b16e-24b19f945ade",
+                "3db83e54-40f7-44a9-9453-bb6d96ffaabb",
+                "4edee1c6-73ec-41d6-9560-c784804c0171",
+                "b79c73d2-03a5-4097-aed9-feeedda7c172",
+                "ff563154-a416-4add-bfc1-c04d200cfaa0"
+              ],
+              "methods": []
+            },
+            "f65927bb-2002-483f-b16e-24b19f945ade": {
+              "id": "f65927bb-2002-483f-b16e-24b19f945ade",
+              "name": "BEGINNER",
+              "type": "ClassAttribute",
+              "owner": "b6131361-b58f-466b-a82f-9ec35b91c173",
+              "bounds": {
+                "x": -329.5,
+                "y": 190.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "3db83e54-40f7-44a9-9453-bb6d96ffaabb": {
+              "id": "3db83e54-40f7-44a9-9453-bb6d96ffaabb",
+              "name": "INTERMEDIATE",
+              "type": "ClassAttribute",
+              "owner": "b6131361-b58f-466b-a82f-9ec35b91c173",
+              "bounds": {
+                "x": -329.5,
+                "y": 220.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "4edee1c6-73ec-41d6-9560-c784804c0171": {
+              "id": "4edee1c6-73ec-41d6-9560-c784804c0171",
+              "name": "ADVANCED",
+              "type": "ClassAttribute",
+              "owner": "b6131361-b58f-466b-a82f-9ec35b91c173",
+              "bounds": {
+                "x": -329.5,
+                "y": 250.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "b79c73d2-03a5-4097-aed9-feeedda7c172": {
+              "id": "b79c73d2-03a5-4097-aed9-feeedda7c172",
+              "name": "EXPERT",
+              "type": "ClassAttribute",
+              "owner": "b6131361-b58f-466b-a82f-9ec35b91c173",
+              "bounds": {
+                "x": -329.5,
+                "y": 280.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "ff563154-a416-4add-bfc1-c04d200cfaa0": {
+              "id": "ff563154-a416-4add-bfc1-c04d200cfaa0",
+              "name": "MASTERCLASS",
+              "type": "ClassAttribute",
+              "owner": "b6131361-b58f-466b-a82f-9ec35b91c173",
+              "bounds": {
+                "x": -329.5,
+                "y": 310.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "8a672dfc-a9f9-454f-83ae-68237ca90d68": {
+              "id": "8a672dfc-a9f9-454f-83ae-68237ca90d68",
+              "name": "SkillRequestStatus",
+              "type": "Enumeration",
+              "owner": null,
+              "bounds": {
+                "x": -130,
+                "y": 140,
+                "width": 170,
+                "height": 170
+              },
+              "attributes": [
+                "09019304-f210-4fd9-8241-6fe075d85af4",
+                "a9d369d7-8050-476a-b6e0-8a90c15e9949",
+                "f2e51047-3e2c-4150-a773-209a4b8332d3",
+                "7a92732a-66ce-4ddf-8d4a-3d48a9cad4c3"
+              ],
+              "methods": []
+            },
+            "09019304-f210-4fd9-8241-6fe075d85af4": {
+              "id": "09019304-f210-4fd9-8241-6fe075d85af4",
+              "name": "OPEN",
+              "type": "ClassAttribute",
+              "owner": "8a672dfc-a9f9-454f-83ae-68237ca90d68",
+              "bounds": {
+                "x": -129.5,
+                "y": 190.5,
+                "width": 169,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "a9d369d7-8050-476a-b6e0-8a90c15e9949": {
+              "id": "a9d369d7-8050-476a-b6e0-8a90c15e9949",
+              "name": "MATCHED",
+              "type": "ClassAttribute",
+              "owner": "8a672dfc-a9f9-454f-83ae-68237ca90d68",
+              "bounds": {
+                "x": -129.5,
+                "y": 220.5,
+                "width": 169,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "f2e51047-3e2c-4150-a773-209a4b8332d3": {
+              "id": "f2e51047-3e2c-4150-a773-209a4b8332d3",
+              "name": "COMPLETED",
+              "type": "ClassAttribute",
+              "owner": "8a672dfc-a9f9-454f-83ae-68237ca90d68",
+              "bounds": {
+                "x": -129.5,
+                "y": 250.5,
+                "width": 169,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "7a92732a-66ce-4ddf-8d4a-3d48a9cad4c3": {
+              "id": "7a92732a-66ce-4ddf-8d4a-3d48a9cad4c3",
+              "name": "CANCELLED",
+              "type": "ClassAttribute",
+              "owner": "8a672dfc-a9f9-454f-83ae-68237ca90d68",
+              "bounds": {
+                "x": -129.5,
+                "y": 280.5,
+                "width": 169,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "74c3ad30-ff07-4693-9c87-bccbf4e81e47": {
+              "id": "74c3ad30-ff07-4693-9c87-bccbf4e81e47",
+              "name": "SkillMatchStatus",
+              "type": "Enumeration",
+              "owner": null,
+              "bounds": {
+                "x": 60,
+                "y": 140,
+                "width": 160,
+                "height": 170
+              },
+              "attributes": [
+                "7e420a04-2d45-4517-842c-4a5992cb071f",
+                "8e15abb1-376d-4eb6-89ac-89535d0acc13",
+                "1944cbd6-12e4-4e30-9c42-b615b5d12812",
+                "1817fb45-9ee8-4f41-b28c-72924492ca7a"
+              ],
+              "methods": []
+            },
+            "7e420a04-2d45-4517-842c-4a5992cb071f": {
+              "id": "7e420a04-2d45-4517-842c-4a5992cb071f",
+              "name": "PENDING",
+              "type": "ClassAttribute",
+              "owner": "74c3ad30-ff07-4693-9c87-bccbf4e81e47",
+              "bounds": {
+                "x": 60.5,
+                "y": 190.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "8e15abb1-376d-4eb6-89ac-89535d0acc13": {
+              "id": "8e15abb1-376d-4eb6-89ac-89535d0acc13",
+              "name": "ACTIVE",
+              "type": "ClassAttribute",
+              "owner": "74c3ad30-ff07-4693-9c87-bccbf4e81e47",
+              "bounds": {
+                "x": 60.5,
+                "y": 220.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "1944cbd6-12e4-4e30-9c42-b615b5d12812": {
+              "id": "1944cbd6-12e4-4e30-9c42-b615b5d12812",
+              "name": "COMPLETED",
+              "type": "ClassAttribute",
+              "owner": "74c3ad30-ff07-4693-9c87-bccbf4e81e47",
+              "bounds": {
+                "x": 60.5,
+                "y": 250.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "1817fb45-9ee8-4f41-b28c-72924492ca7a": {
+              "id": "1817fb45-9ee8-4f41-b28c-72924492ca7a",
+              "name": "REJECTED",
+              "type": "ClassAttribute",
+              "owner": "74c3ad30-ff07-4693-9c87-bccbf4e81e47",
+              "bounds": {
+                "x": 60.5,
+                "y": 280.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "2b8eca80-f6cc-498e-ada3-b796a3e02dc6": {
+              "id": "2b8eca80-f6cc-498e-ada3-b796a3e02dc6",
+              "name": "SessionType",
+              "type": "Enumeration",
+              "owner": null,
+              "bounds": {
+                "x": 250,
+                "y": 140,
+                "width": 160,
+                "height": 140
+              },
+              "attributes": [
+                "744f542c-5a1d-4cc8-bb81-9d56cbe8860d",
+                "ed681387-57e3-45a1-b0c3-880094d65274",
+                "fabfb2af-2616-478a-8252-9679e75506e5"
+              ],
+              "methods": []
+            },
+            "744f542c-5a1d-4cc8-bb81-9d56cbe8860d": {
+              "id": "744f542c-5a1d-4cc8-bb81-9d56cbe8860d",
+              "name": "ONLINE",
+              "type": "ClassAttribute",
+              "owner": "2b8eca80-f6cc-498e-ada3-b796a3e02dc6",
+              "bounds": {
+                "x": 250.5,
+                "y": 190.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "ed681387-57e3-45a1-b0c3-880094d65274": {
+              "id": "ed681387-57e3-45a1-b0c3-880094d65274",
+              "name": "OFFLINE",
+              "type": "ClassAttribute",
+              "owner": "2b8eca80-f6cc-498e-ada3-b796a3e02dc6",
+              "bounds": {
+                "x": 250.5,
+                "y": 220.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            },
+            "fabfb2af-2616-478a-8252-9679e75506e5": {
+              "id": "fabfb2af-2616-478a-8252-9679e75506e5",
+              "name": "HYBRID",
+              "type": "ClassAttribute",
+              "owner": "2b8eca80-f6cc-498e-ada3-b796a3e02dc6",
+              "bounds": {
+                "x": 250.5,
+                "y": 250.5,
+                "width": 159,
+                "height": 30
+              },
+              "code": "",
+              "visibility": "public",
+              "attributeType": "str",
+              "implementationType": "none",
+              "stateMachineId": "",
+              "quantumCircuitId": "",
+              "isOptional": false,
+              "isDerived": false
+            }
+          },
+          "relationships": {
+            "ccfbf69b-f2cd-4166-9078-3b6c37e40cd0": {
+              "id": "ccfbf69b-f2cd-4166-9078-3b6c37e40cd0",
+              "name": "teaches",
+              "type": "ClassUnidirectional",
+              "owner": null,
+              "bounds": {
+                "x": -430,
+                "y": -285,
+                "width": 130,
+                "height": 48.60000038146973
+              },
+              "path": [
+                {
+                  "x": 0,
+                  "y": 10
+                },
+                {
+                  "x": 130,
+                  "y": 10
+                }
+              ],
+              "source": {
+                "direction": "Right",
+                "element": "9ea8c4c7-3cbd-4ecd-b525-2ec050ee13db",
+                "multiplicity": "1",
+                "role": ""
+              },
+              "target": {
+                "direction": "Downleft",
+                "element": "0a3e1eab-2826-43a0-bad7-87e0e59b40a8",
+                "multiplicity": "1..*",
+                "role": ""
+              },
+              "isManuallyLayouted": false
+            },
+            "0af6ca7b-8647-43fc-ac8c-6fabc1d83aa8": {
+              "id": "0af6ca7b-8647-43fc-ac8c-6fabc1d83aa8",
+              "name": "refers_to",
+              "type": "ClassUnidirectional",
+              "owner": null,
+              "bounds": {
+                "x": -90,
+                "y": -270,
+                "width": 130,
+                "height": 48.60000038146973
+              },
+              "path": [
+                {
+                  "x": 0,
+                  "y": 10
+                },
+                {
+                  "x": 130,
+                  "y": 10
+                }
+              ],
+              "source": {
+                "direction": "Upright",
+                "element": "0a3e1eab-2826-43a0-bad7-87e0e59b40a8",
+                "multiplicity": "0..*",
+                "role": ""
+              },
+              "target": {
+                "direction": "Upleft",
+                "element": "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300",
+                "multiplicity": "1",
+                "role": ""
+              },
+              "isManuallyLayouted": false
+            },
+            "4ebe8fe7-a396-49f1-a284-11f7b35932f7": {
+              "id": "4ebe8fe7-a396-49f1-a284-11f7b35932f7",
+              "name": "creates",
+              "type": "ClassUnidirectional",
+              "owner": null,
+              "bounds": {
+                "x": -430,
+                "y": -252.5,
+                "width": 160,
+                "height": 191.10000038146973
+              },
+              "path": [
+                {
+                  "x": 0,
+                  "y": 10
+                },
+                {
+                  "x": 80,
+                  "y": 10
+                },
+                {
+                  "x": 80,
+                  "y": 152.5
+                },
+                {
+                  "x": 160,
+                  "y": 152.5
+                }
+              ],
+              "source": {
+                "direction": "Downright",
+                "element": "9ea8c4c7-3cbd-4ecd-b525-2ec050ee13db",
+                "multiplicity": "1",
+                "role": ""
+              },
+              "target": {
+                "direction": "Upleft",
+                "element": "63505601-bb2a-47cb-a20e-632777a06e67",
+                "multiplicity": "0..*",
+                "role": ""
+              },
+              "isManuallyLayouted": false
+            },
+            "f5036ca1-a1d3-412c-8642-a1c83339fb7b": {
+              "id": "f5036ca1-a1d3-412c-8642-a1c83339fb7b",
+              "name": "involves(teacher)",
+              "type": "ClassUnidirectional",
+              "owner": null,
+              "bounds": {
+                "x": -515,
+                "y": -210,
+                "width": 34.18906211853027,
+                "height": 99.60000038146973
+              },
+              "path": [
+                {
+                  "x": 5,
+                  "y": 90
+                },
+                {
+                  "x": 5,
+                  "y": 0
+                }
+              ],
+              "source": {
+                "direction": "Up",
+                "element": "c92da6fe-f60a-4a01-a5ba-2553359d4c37",
+                "multiplicity": "0..*",
+                "role": ""
+              },
+              "target": {
+                "direction": "Down",
+                "element": "9ea8c4c7-3cbd-4ecd-b525-2ec050ee13db",
+                "multiplicity": "1",
+                "role": ""
+              },
+              "isManuallyLayouted": false
+            },
+            "4a0ea703-59cf-46e3-bd08-06223d0efda8": {
+              "id": "4a0ea703-59cf-46e3-bd08-06223d0efda8",
+              "name": "has",
+              "type": "ClassUnidirectional",
+              "owner": null,
+              "bounds": {
+                "x": -445,
+                "y": 40,
+                "width": 549.1890621185303,
+                "height": 78.60000038146973
+              },
+              "path": [
+                {
+                  "x": 5,
+                  "y": 0
+                },
+                {
+                  "x": 5,
+                  "y": 60
+                },
+                {
+                  "x": 520,
+                  "y": 60
+                },
+                {
+                  "x": 520,
+                  "y": 20
+                }
+              ],
+              "source": {
+                "direction": "Bottomright",
+                "element": "c92da6fe-f60a-4a01-a5ba-2553359d4c37",
+                "multiplicity": "1",
+                "role": ""
+              },
+              "target": {
+                "direction": "Bottomleft",
+                "element": "282207cd-25b7-471f-b235-90ccfe757938",
+                "multiplicity": "0..*",
+                "role": ""
+              },
+              "isManuallyLayouted": false
+            },
+            "500845c0-b92a-4ec2-a5d0-d983f8f874a5": {
+              "id": "500845c0-b92a-4ec2-a5d0-d983f8f874a5",
+              "name": "review",
+              "type": "ClassUnidirectional",
+              "owner": null,
+              "bounds": {
+                "x": 240,
+                "y": -25,
+                "width": 110,
+                "height": 48.60000038146973
+              },
+              "path": [
+                {
+                  "x": 0,
+                  "y": 10
+                },
+                {
+                  "x": 110,
+                  "y": 10
+                }
+              ],
+              "source": {
+                "direction": "Upright",
+                "element": "282207cd-25b7-471f-b235-90ccfe757938",
+                "multiplicity": "1",
+                "role": ""
+              },
+              "target": {
+                "direction": "Left",
+                "element": "1839b10b-70ba-4942-b4ac-8ce40a8e06ac",
+                "multiplicity": "0..1",
+                "role": ""
+              },
+              "isManuallyLayouted": false
+            },
+            "8dbf04e3-2dd7-47d6-9b8d-d2a23eef25e3": {
+              "id": "8dbf04e3-2dd7-47d6-9b8d-d2a23eef25e3",
+              "name": "leads_to",
+              "type": "ClassUnidirectional",
+              "owner": null,
+              "bounds": {
+                "x": -390,
+                "y": -60,
+                "width": 120,
+                "height": 48.60000038146973
+              },
+              "path": [
+                {
+                  "x": 120,
+                  "y": 10
+                },
+                {
+                  "x": 0,
+                  "y": 10
+                }
+              ],
+              "source": {
+                "direction": "Left",
+                "element": "63505601-bb2a-47cb-a20e-632777a06e67",
+                "multiplicity": "0..*",
+                "role": ""
+              },
+              "target": {
+                "direction": "Right",
+                "element": "c92da6fe-f60a-4a01-a5ba-2553359d4c37",
+                "multiplicity": "0..1",
+                "role": ""
+              },
+              "isManuallyLayouted": false
+            },
+            "be7bf8d2-878b-4459-9030-c18c28a3a263": {
+              "id": "be7bf8d2-878b-4459-9030-c18c28a3a263",
+              "name": "involves(learner)",
+              "type": "ClassUnidirectional",
+              "owner": null,
+              "bounds": {
+                "x": -630,
+                "y": -285,
+                "width": 40,
+                "height": 243.60000038146973
+              },
+              "path": [
+                {
+                  "x": 40,
+                  "y": 205
+                },
+                {
+                  "x": 0,
+                  "y": 205
+                },
+                {
+                  "x": 0,
+                  "y": 10
+                },
+                {
+                  "x": 40,
+                  "y": 10
+                }
+              ],
+              "source": {
+                "direction": "Upleft",
+                "element": "c92da6fe-f60a-4a01-a5ba-2553359d4c37",
+                "multiplicity": "0..*",
+                "role": ""
+              },
+              "target": {
+                "direction": "Left",
+                "element": "9ea8c4c7-3cbd-4ecd-b525-2ec050ee13db",
+                "multiplicity": "1",
+                "role": ""
+              },
+              "isManuallyLayouted": false
+            },
+            "2a1b7606-9736-4b38-8d2c-cffa4d68fda9": {
+              "id": "2a1b7606-9736-4b38-8d2c-cffa4d68fda9",
+              "name": "wants",
+              "type": "ClassBidirectional",
+              "owner": null,
+              "bounds": {
+                "x": -50,
+                "y": -195,
+                "width": 90,
+                "height": 173.60000038146973
+              },
+              "path": [
+                {
+                  "x": 0,
+                  "y": 135
+                },
+                {
+                  "x": 45,
+                  "y": 135
+                },
+                {
+                  "x": 45,
+                  "y": 10
+                },
+                {
+                  "x": 90,
+                  "y": 10
+                }
+              ],
+              "source": {
+                "direction": "Right",
+                "element": "63505601-bb2a-47cb-a20e-632777a06e67",
+                "multiplicity": "0..*",
+                "role": ""
+              },
+              "target": {
+                "direction": "Downleft",
+                "element": "0a85ac9a-b3e8-4fe0-b5c7-1dacb8f54300",
+                "multiplicity": "1",
+                "role": ""
+              },
+              "isManuallyLayouted": false
+            }
+          },
+          "assessments": {}
+        },
+        "lastUpdate": "2026-03-27T15:41:25.871Z"
+      }
+    },
+    "settings": {
+      "defaultDiagramType": "ClassDiagram",
+      "autoSave": true,
+      "collaborationEnabled": false
+    }
+  },
+  "exportedAt": "2026-03-27T15:41:40.465Z",
+  "version": "2.0.0"
+}
